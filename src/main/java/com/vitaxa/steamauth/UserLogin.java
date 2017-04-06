@@ -21,7 +21,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class UserLogin {
+public final class UserLogin {
     public String username;
     public String password;
     public long steamID;

@@ -26,23 +26,23 @@ public class AuthenticatorLinker {
      * If a phone number is not set on the account, this must be set.
      * If a phone number is set on the account, this must be null.
      */
-    public String phoneNumber = null;
+    private String phoneNumber = null;
 
     /**
      * Randomly-generated device ID. Should only be generated once per linker.
      */
-    public String deviceID;
+    private String deviceID;
 
     /**
      * After the initial link step, if successful, this will be the SteamGuard data for the account.
      * PLEASE save this somewhere after generating it; it's vital data.
      */
-    public SteamGuardAccount linkedAccount;
+    private SteamGuardAccount linkedAccount;
 
     /**
      * True if the authenticator has been fully finalized.
      */
-    public boolean finalized = false;
+    private boolean finalized = false;
 
     private SessionData session;
     private CookieStore cookieStore;
@@ -230,6 +230,30 @@ public class AuthenticatorLinker {
         }
 
         return result.toString();
+    }
+
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
+    }
+
+    public String getPhoneNumber() {
+        return phoneNumber;
+    }
+
+    public String getDeviceID() {
+        return deviceID;
+    }
+
+    public SteamGuardAccount getLinkedAccount() {
+        return linkedAccount;
+    }
+
+    public boolean isFinalized() {
+        return finalized;
+    }
+
+    public SessionData getSession() {
+        return session;
     }
 
     private final class AddAuthenticatorResponse {

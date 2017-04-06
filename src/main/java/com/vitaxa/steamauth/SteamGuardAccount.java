@@ -345,6 +345,10 @@ public final class SteamGuardAccount {
         return this;
     }
 
+    public String getAccountName() {
+        return accountName;
+    }
+
     private class RefreshSessionDataResponse {
         @SerializedName("token")
         public String token;
