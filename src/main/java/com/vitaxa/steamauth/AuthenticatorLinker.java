@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
+import java.lang.reflect.Type;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
@@ -11,6 +12,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.google.gson.annotations.SerializedName;
+import com.google.gson.reflect.TypeToken;
 import com.vitaxa.steamauth.APIEndpoints;
 import com.vitaxa.steamauth.helper.IOHelper;
 import com.vitaxa.steamauth.http.HttpMethod;
@@ -99,32 +101,51 @@ public class AuthenticatorLinker {
     }
 
     public FinalizeResult finalizeAddAuthenticator(String smsCode) {
-        if (phoneNumber != null && !phoneNumber.isEmpty() && !this.checkSMSCode) {
+        if (phoneNumber != null && !phoneNumber.isEmpty() && !checkSMSCode(smsCode)) {
             return FinalizeResult.BAD_SMS_CODE;
         }
 
-        Map<String, Object> postData = new HashMap<>();
-        postData.put("steamid", session.SteamID);
-        postData.put("access_token", session.OAuthToken);
+        Map<String, String> postData = new HashMap<>();
+        postData.put("steamid", String.valueOf(session.getSteamID()));
+        postData.put("access_token", session.getOAuthToken());
         postData.put("activation_code", smsCode);
         int tries = 0;
         while (tries <= 30) {
-            postData.put("authenticator_code", LinkedAccount.GenerateSteamGuardCode());
-            postData.put("authenticator_time", TimeAligner.GetSteamTime().ToString());
+            postData.put("authenticator_code", linkedAccount.generateSteamGuardCode());
+            postData.put("authenticator_time", String.valueOf(TimeAligner.getSteamTime()));
 
-            String response = SteamWeb.MobileLoginRequest(APIEndpoints.STEAMAPI_BASE + "/ITwoFactorService/FinalizeAddAuthenticator/v0001", "POST", postData);
-            if (response == null) return FinilizeResult.GENERAL_FAILURE;
+            String response = SteamWeb.mobileLoginRequest(APIEndpoints.STEAMAPI_BASE + "/ITwoFactorService/FinalizeAddAuthenticator/v0001",
+                    new HttpParameters(postData, HttpMethod.POST));
 
-            String finalizeResponse = new Gson().fromJson(response, FinalizeAuthenticatorResponse.class);
-            JsonObject responseObject = new JsonParser().parse(response).getAsJsonObject();
-            JsonObject resultResponse = responseObject.get("response").getAsJsonObject();
+            if (response == null) return FinalizeResult.GENERAL_FAILURE;
 
-            if (finalizeResponse == null || resultResponse == null) {
-                return FinalizeResult.GENERAL_FAILURE;
+            Type responseType = new TypeToken<SteamResponse<FinalizeAuthenticatorResponse>>(){}.getType();
+            FinalizeAuthenticatorResponse finalizeResponse = new Gson().fromJson(response, responseType);
+
+            if (finalizeResponse == null) return FinalizeResult.GENERAL_FAILURE;
+
+            if (finalizeResponse.status == 89) {
+                return FinalizeResult.BAD_SMS_CODE;
             }
 
+            if (finalizeResponse.status == 88) {
+                if (tries >= 30)
+                    return FinalizeResult.UNABLE_TO_GENERATE_CORRECT_CODES;
+            }
 
+            if (!finalizeResponse.success) return FinalizeResult.GENERAL_FAILURE;
+
+            if (finalizeResponse.wantMore) {
+                tries++;
+                continue;
+            }
+
+            this.linkedAccount.fullyEnrolled = true;
+
+            return FinalizeResult.SUCCESS;
         }
+
+        return FinalizeResult.GENERAL_FAILURE;
     }
 
     private boolean checkSMSCode(String smsCode) {
@@ -211,17 +232,31 @@ public class AuthenticatorLinker {
         return result.toString();
     }
 
-    private class AddAuthenticatorResponse {
+    private final class AddAuthenticatorResponse {
         @SerializedName("response")
         public SteamGuardAccount response;
     }
 
-    private class AddPhoneResponse {
+    private final class AddPhoneResponse {
         @SerializedName("success")
         public boolean success;
     }
 
-    private class HasPhoneResponse {
+    private final class FinalizeAuthenticatorResponse {
+        @SerializedName("status")
+        public int status;
+
+        @SerializedName("server_time")
+        public long serverTime;
+
+        @SerializedName("want_more")
+        public boolean wantMore;
+
+        @SerializedName("success")
+        public boolean success;
+    }
+
+    private final class HasPhoneResponse {
         @SerializedName("has_phone")
         public boolean hasPhone;
     }

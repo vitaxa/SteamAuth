@@ -112,25 +112,20 @@ public final class SteamGuardAccount {
         Matcher confKeys = confKeyRegex.matcher(response);
         Matcher confDescs = confDescRegex.matcher(response);
 
-
-        // TODO: Дописать
-        /*
         List<Confirmation> ret = new ArrayList<>();
         for (int i = 0; i < confIDs.groupCount(); i++) {
-            string confID = confIDs.group(1);
-            string confKey = confKeys[i].Groups[1].Value;
-            string confDesc = confDescs[i].Groups[1].Value;
-            Confirmation conf = new Confirmation()
-            {
-                Description = confDesc,
-                ID = confID,
-                Key = confKey
-            };
-            ret.Add(conf);
-        }
-        */
+            String confID = confIDs.group(i);
+            String confKey = confKeys.group(i);
+            String confDesc = confDescs.group(i);
 
-        return new Confirmation[0];
+            System.out.println("CONFIG ID: " + confID + "CONFKEY" + confKey + "CONFDESC" + confDesc);
+
+            Confirmation conf = new Confirmation(confID, confKey, confDesc);
+
+            ret.add(conf);
+        }
+
+        return ret.toArray(new Confirmation[ret.size()]);
     }
 
     public String generateSteamGuardCode() {
