@@ -1,65 +1,117 @@
 package com.vitaxa.steamauth;
 
+import org.apache.http.client.CookieStore;
+import org.apache.http.impl.cookie.BasicClientCookie;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 public class SessionData {
-    public String SessionID;
+    private String sessionID;
 
-    public String SteamLogin;
+    private String steamLogin;
 
-    public String SteamLoginSecure;
+    private String steamLoginSecure;
 
-    public String WebCookie;
+    private String webCookie;
 
-    public String OAuthToken;
+    private String oAuthToken;
 
-    public long SteamID;
+    private long steamID;
 
-    //public void addcookies();
+    public void addCookies(CookieStore cookieStore) {
+        List<CustomCookie> cookies = new ArrayList<>();
+
+        cookies.add(new CustomCookie("mobileClientVersion", "0 (2.1.3)"));
+        cookies.add(new CustomCookie("mobileClient", "android"));
+        cookies.add(new CustomCookie("steamid",  String.valueOf(steamID)));
+        cookies.add(new CustomCookie("steamLogin", steamLogin));
+        cookies.add(new CustomCookie("steamLoginSecure", steamLoginSecure, true));
+        cookies.add(new CustomCookie("Steam_Language", ""));
+        cookies.add(new CustomCookie("sessionid", sessionID));
+
+        createCookies(cookieStore, cookies);
+    }
 
     public String getSessionID() {
-        return SessionID;
+        return sessionID;
     }
 
     public void setSessionID(String sessionID) {
-        SessionID = sessionID;
+        this.sessionID = sessionID;
     }
 
     public String getSteamLogin() {
-        return SteamLogin;
+        return steamLogin;
     }
 
     public void setSteamLogin(String steamLogin) {
-        SteamLogin = steamLogin;
+        this.steamLogin = steamLogin;
     }
 
     public String getSteamLoginSecure() {
-        return SteamLoginSecure;
+        return steamLoginSecure;
     }
 
     public void setSteamLoginSecure(String steamLoginSecure) {
-        SteamLoginSecure = steamLoginSecure;
+        this.steamLoginSecure = steamLoginSecure;
     }
 
     public String getWebCookie() {
-        return WebCookie;
+        return webCookie;
     }
 
     public void setWebCookie(String webCookie) {
-        WebCookie = webCookie;
+        this.webCookie = webCookie;
     }
 
     public String getOAuthToken() {
-        return OAuthToken;
+        return oAuthToken;
     }
 
     public void setOAuthToken(String OAuthToken) {
-        this.OAuthToken = OAuthToken;
+        this.oAuthToken = OAuthToken;
     }
 
     public long getSteamID() {
-        return SteamID;
+        return steamID;
     }
 
     public void setSteamID(long steamID) {
-        SteamID = steamID;
+        this.steamID = steamID;
+    }
+
+    private void createCookies(CookieStore cookieStore, List<CustomCookie> cookies) {
+        cookies.forEach(cookie -> {
+            BasicClientCookie clientCookie = new BasicClientCookie(cookie.name, cookie.value);
+            clientCookie.setDomain(".steamcommunity.com");
+            clientCookie.setPath("/");
+
+            if (cookie.secure)
+                clientCookie.setSecure(true);
+
+            // Add cookie to cookie store
+            cookieStore.addCookie(clientCookie);
+        });
+    }
+
+    private final class CustomCookie {
+        private final String name;
+        private final String value;
+        private final boolean secure;
+
+        public CustomCookie(String name, String value) {
+            this.name = name;
+            this.value = value;
+            this.secure = false;
+        }
+
+        public CustomCookie(String name, String value, boolean secure) {
+            this.name = name;
+            this.value = value;
+            this.secure = secure;
+        }
     }
 }
