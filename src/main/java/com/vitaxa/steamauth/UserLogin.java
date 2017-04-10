@@ -6,6 +6,7 @@ import com.vitaxa.steamauth.helper.CommonHelper;
 import com.vitaxa.steamauth.helper.IOHelper;
 import com.vitaxa.steamauth.http.HttpMethod;
 import com.vitaxa.steamauth.http.HttpParameters;
+import org.apache.commons.codec.binary.Hex;
 import org.apache.http.cookie.Cookie;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
@@ -84,14 +85,12 @@ public final class UserLogin {
         String encryptedPassword;
 
         try {
-            RSAPublicKeySpec publicKeySpec = new RSAPublicKeySpec(new BigInteger(rsaResponse.modulus),
-                    new BigInteger(rsaResponse.exponent));
+            RSAPublicKeySpec publicKeySpec = new RSAPublicKeySpec(new BigInteger(rsaResponse.modulus, 16),
+                    new BigInteger(rsaResponse.exponent, 16));
+            KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+            RSAPublicKey RSAkey = (RSAPublicKey) keyFactory.generatePublic(publicKeySpec);
 
-            Security.insertProviderAt(new BouncyCastleProvider(), 1);
-            KeyFactory factory = KeyFactory.getInstance("RSA", "BC");
-            RSAPublicKey RSAkey = (RSAPublicKey) factory.generatePublic(publicKeySpec);
-
-            Cipher cipher = Cipher.getInstance("RSA/None/PKCS1Padding", "BC");
+            Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1PADDING");
             cipher.init(Cipher.ENCRYPT_MODE, RSAkey);
 
             encryptedPassword = Base64.getEncoder().encodeToString(cipher.doFinal(passwordBytes));
@@ -123,7 +122,7 @@ public final class UserLogin {
 
         LoginResponse loginResponse = new Gson().fromJson(response, LoginResponse.class);
 
-        if (loginResponse.message != null && loginResponse.message.contains("Incorrect login")) {
+        if (loginResponse.message != null && loginResponse.message.contains("The account name or password that you have entered is incorrect.")) {
             return LoginResult.BAD_CREDENTIALS;
         }
 

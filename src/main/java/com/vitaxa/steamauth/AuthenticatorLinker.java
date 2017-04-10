@@ -17,6 +17,7 @@ import com.vitaxa.steamauth.APIEndpoints;
 import com.vitaxa.steamauth.helper.IOHelper;
 import com.vitaxa.steamauth.http.HttpMethod;
 import com.vitaxa.steamauth.http.HttpParameters;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.http.client.CookieStore;
 import org.apache.http.impl.client.BasicCookieStore;
 
@@ -80,11 +81,14 @@ public class AuthenticatorLinker {
                 new HttpParameters(postData, HttpMethod.POST));
         if (response == null) return LinkResult.GENERAL_FAILURE;
 
+        System.out.println("ADD AUTHENTICATOR RESPONSE: " + response);
+
         AddAuthenticatorResponse addAuthenticatorResponse = new Gson().fromJson(response, AddAuthenticatorResponse.class);
 
         if (addAuthenticatorResponse == null || addAuthenticatorResponse.response == null) {
             return LinkResult.GENERAL_FAILURE;
         }
+
         if (addAuthenticatorResponse.response.getStatus() == 29) {
             return LinkResult.AUTHENTICATOR_PRESENT;
         }
@@ -176,9 +180,10 @@ public class AuthenticatorLinker {
         try {
             MessageDigest  md = MessageDigest.getInstance("SHA-1");
             byte[] hashedBytes = md.digest(randomBytes);
-            String random32 = IOHelper.decode(hashedBytes).replace("-", "").substring(0, 32).toLowerCase();
 
-            return "android:" + splitOnRatios(random32, new int[] { 8, 4, 4, 4, 12}, "-");
+            String random32 = DigestUtils.sha1Hex(hashedBytes).substring(0, 32);
+
+            return "android:" + splitOnRatios(random32, new int[] { 8, 4, 4, 4, 12 }, "-");
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
             return "";
@@ -222,11 +227,13 @@ public class AuthenticatorLinker {
 
         int pos = 0;
         for (int index = 0; index < ratios.length; index++) {
-            result.append(str.substring(pos, ratios[index]));
+            result.append(str.substring(pos, Math.min(pos + ratios[index], str.length())));
             pos = ratios[index];
 
             if (index < ratios.length- 1)
                 result.append(intermediate);
+
+            System.out.println(result.toString());
         }
 
         return result.toString();
