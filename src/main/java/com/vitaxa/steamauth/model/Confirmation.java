@@ -1,4 +1,4 @@
-package com.vitaxa.steamauth;
+package com.vitaxa.steamauth.model;
 
 public class Confirmation {
     public String id;

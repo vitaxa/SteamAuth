@@ -4,16 +4,18 @@ import com.google.gson.Gson;
 import com.google.gson.annotations.SerializedName;
 import com.google.gson.reflect.TypeToken;
 import com.vitaxa.steamauth.crypto.HMACSHA1;
+import com.vitaxa.steamauth.exception.WGTokenInvalidException;
 import com.vitaxa.steamauth.helper.IOHelper;
 import com.vitaxa.steamauth.http.HttpMethod;
 import com.vitaxa.steamauth.http.HttpParameters;
-import jdk.nashorn.internal.runtime.regexp.joni.Regex;
+import com.vitaxa.steamauth.model.Confirmation;
+import com.vitaxa.steamauth.model.SessionData;
+import com.vitaxa.steamauth.model.SteamResponse;
 
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Type;
 import java.net.URLEncoder;
 import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -72,6 +74,10 @@ public final class SteamGuardAccount {
         return sendConfirmationAjax(conf, "cancel");
     }
 
+    public boolean deactivateAuthenticator() {
+        return this.deactivateAuthenticator(2);
+    }
+
     public boolean deactivateAuthenticator(int scheme) {
         Map<String, String> postData = new HashMap<>(4);
         postData.put("steamid", String.valueOf(session.getSteamID()));
@@ -85,7 +91,9 @@ public final class SteamGuardAccount {
 
             Type responseType = new TypeToken<SteamResponse<RemoveAuthenticatorResponse>>(){}.getType();
 
-            RemoveAuthenticatorResponse removeResponse = new Gson().fromJson(response, responseType);
+            SteamResponse steamResponse = new Gson().fromJson(response, responseType);
+
+            RemoveAuthenticatorResponse removeResponse = (RemoveAuthenticatorResponse) steamResponse.getResponse();
 
             return !(removeResponse == null || !removeResponse.isSuccess());
         } catch (Exception e) {
@@ -118,8 +126,6 @@ public final class SteamGuardAccount {
             String confKey = confKeys.group(i);
             String confDesc = confDescs.group(i);
 
-            System.out.println("CONFIG ID: " + confID + "CONFKEY" + confKey + "CONFDESC" + confDesc);
-
             Confirmation conf = new Confirmation(confID, confKey, confDesc);
 
             ret.add(conf);
@@ -136,9 +142,7 @@ public final class SteamGuardAccount {
         if (sharedSecret == null || sharedSecret.length() == 0) return "";
 
         // Shared secret is our key
-        String sharedSecretUnescaped = IOHelper.decode(Base64.getDecoder().decode(sharedSecret));
-
-        byte[] sharedSecretArray = Base64.getDecoder().decode(sharedSecretUnescaped);
+        byte[] sharedSecretBytes = Base64.getDecoder().decode(sharedSecret);
         byte[] timeArray = new byte[8];
 
         // Time for code
@@ -151,7 +155,7 @@ public final class SteamGuardAccount {
         // Generate hmac
         byte[] codeArray = new byte[5];
         try {
-            byte[] hashedData = HMACSHA1.calculate(timeArray, sharedSecretArray);
+            byte[] hashedData = HMACSHA1.calculate(timeArray, sharedSecretBytes);
 
             // the last 4 bits of the hashedData say where the code starts
             // (e.g. if last 4 bit are 1100, we start at byte 12)

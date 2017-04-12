@@ -1,4 +1,4 @@
-package com.vitaxa.steamauth;
+package com.vitaxa.steamauth.model;
 
 import org.apache.http.client.CookieStore;
 import org.apache.http.impl.cookie.BasicClientCookie;

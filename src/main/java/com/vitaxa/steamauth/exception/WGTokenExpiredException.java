@@ -1,4 +1,4 @@
-package com.vitaxa.steamauth;
+package com.vitaxa.steamauth.exception;
 
 import java.io.Serializable;
 

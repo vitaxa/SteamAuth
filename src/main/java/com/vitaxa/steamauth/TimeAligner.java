@@ -6,13 +6,12 @@ import com.google.gson.reflect.TypeToken;
 import com.vitaxa.steamauth.helper.CommonHelper;
 import com.vitaxa.steamauth.http.HttpMethod;
 import com.vitaxa.steamauth.http.HttpParameters;
+import com.vitaxa.steamauth.model.SteamResponse;
 
 import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.*;
-
-import static java.lang.System.currentTimeMillis;
 
 public final class TimeAligner {
     private static final ThreadFactory THREAD_FACTORY = r -> CommonHelper.newThread("TimeAligner Thread", true, r);
@@ -38,15 +37,19 @@ public final class TimeAligner {
         return CommonHelper.getUnixTimeStamp() + timeDifference;
     }
 
-    private static void alignTime() {
+    public static void alignTime() {
         long currentTime = CommonHelper.getUnixTimeStamp();
 
         Map<String, String> params = new HashMap<>();
         params.put("steamid", "0");
-        String response = SteamWeb.fetch(APIEndpoints.TWO_FACTOR_TIME_QUERY, new HttpParameters(params, HttpMethod.GET));
+        String response = SteamWeb.fetch(APIEndpoints.TWO_FACTOR_TIME_QUERY, new HttpParameters(params, HttpMethod.POST));
+
+        System.out.println("RESPONSE ALIGNTIME " +  response);
 
         Type responseType = new TypeToken<SteamResponse<TimeQuery>>(){}.getType();
-        TimeQuery query = new Gson().fromJson(response, responseType);
+        SteamResponse steamResponse = new Gson().fromJson(response, responseType);
+
+        TimeQuery query = (TimeQuery) steamResponse.getResponse();
 
         timeDifference = (int) (query.serverTime - currentTime);
         aligned = true;

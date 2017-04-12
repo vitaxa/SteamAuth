@@ -1,5 +1,6 @@
 package com.vitaxa.steamauth;
 
+import com.vitaxa.steamauth.exception.WGTokenExpiredException;
 import com.vitaxa.steamauth.helper.CommonHelper;
 import com.vitaxa.steamauth.helper.IOHelper;
 import com.vitaxa.steamauth.http.HttpParameters;

@@ -6,7 +6,7 @@
 
     <groupId>com.vitaxa.steamauth</groupId>
     <artifactId>steamauth</artifactId>
-    <version>0.0.1</version>
+    <version>0.1.2a</version>
 
     <build>
         <plugins>
@@ -67,12 +67,6 @@
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>
             <version>4.5.3</version>
-        </dependency>
-        <dependency>
-            <groupId>org.bouncycastle</groupId>
-            <artifactId>bcprov-jdk15on</artifactId>
-            <version>1.56</version>
-            <type>jar</type>
         </dependency>
         <dependency>
             <groupId>junit</groupId>

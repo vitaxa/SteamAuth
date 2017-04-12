@@ -13,10 +13,12 @@ import java.util.Map;
 
 import com.google.gson.annotations.SerializedName;
 import com.google.gson.reflect.TypeToken;
-import com.vitaxa.steamauth.APIEndpoints;
-import com.vitaxa.steamauth.helper.IOHelper;
 import com.vitaxa.steamauth.http.HttpMethod;
 import com.vitaxa.steamauth.http.HttpParameters;
+import com.vitaxa.steamauth.model.FinalizeResult;
+import com.vitaxa.steamauth.model.LinkResult;
+import com.vitaxa.steamauth.model.SessionData;
+import com.vitaxa.steamauth.model.SteamResponse;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.http.client.CookieStore;
 import org.apache.http.impl.client.BasicCookieStore;
@@ -81,8 +83,6 @@ public class AuthenticatorLinker {
                 new HttpParameters(postData, HttpMethod.POST));
         if (response == null) return LinkResult.GENERAL_FAILURE;
 
-        System.out.println("ADD AUTHENTICATOR RESPONSE: " + response);
-
         AddAuthenticatorResponse addAuthenticatorResponse = new Gson().fromJson(response, AddAuthenticatorResponse.class);
 
         if (addAuthenticatorResponse == null || addAuthenticatorResponse.response == null) {
@@ -124,7 +124,9 @@ public class AuthenticatorLinker {
             if (response == null) return FinalizeResult.GENERAL_FAILURE;
 
             Type responseType = new TypeToken<SteamResponse<FinalizeAuthenticatorResponse>>(){}.getType();
-            FinalizeAuthenticatorResponse finalizeResponse = new Gson().fromJson(response, responseType);
+            SteamResponse steamResponse = new Gson().fromJson(response, responseType);
+
+            FinalizeAuthenticatorResponse finalizeResponse = (FinalizeAuthenticatorResponse) steamResponse.getResponse();
 
             if (finalizeResponse == null) return FinalizeResult.GENERAL_FAILURE;
 
@@ -232,8 +234,6 @@ public class AuthenticatorLinker {
 
             if (index < ratios.length- 1)
                 result.append(intermediate);
-
-            System.out.println(result.toString());
         }
 
         return result.toString();
@@ -290,20 +290,5 @@ public class AuthenticatorLinker {
     private final class HasPhoneResponse {
         @SerializedName("has_phone")
         public boolean hasPhone;
-    }
-
-    public enum LinkResult {
-        MUST_PROVIDE_PHONE_NUMBER, //No phone number on the account
-        MUST_REMOVE_PHONE_NUMBER, //A phone number is already on the account
-        AWAITING_FINALIZATION, //Must provide an SMS code
-        GENERAL_FAILURE, //General failure (really now!)
-        AUTHENTICATOR_PRESENT
-    }
-
-    public enum FinalizeResult {
-        BAD_SMS_CODE,
-        UNABLE_TO_GENERATE_CORRECT_CODES,
-        SUCCESS,
-        GENERAL_FAILURE
     }
 }
