@@ -11,6 +11,7 @@ import com.vitaxa.steamauth.http.HttpParameters;
 import com.vitaxa.steamauth.model.Confirmation;
 import com.vitaxa.steamauth.model.SessionData;
 import com.vitaxa.steamauth.model.SteamResponse;
+import org.apache.http.impl.client.BasicCookieStore;
 
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Type;
@@ -105,6 +106,10 @@ public final class SteamGuardAccount {
     public Confirmation[] fetchConfirmations() throws WGTokenInvalidException {
         String url = generateConfirmationURL();
 
+        final BasicCookieStore cookies = new BasicCookieStore();
+        session.addCookies(cookies);
+        SteamWeb.setCookieStore(cookies);
+
         String response = SteamWeb.fetch(url, new HttpParameters(HttpMethod.GET));
 
         if (response == null || !(confIDRegex.matcher(response).find() && confKeyRegex.matcher(response).find()
@@ -184,19 +189,19 @@ public final class SteamGuardAccount {
         return Long.valueOf(tradeOfferIDRegex.matcher(confDetails.html).group(1));
     }
 
-    public String generateConfirmationURL() {
+    private String generateConfirmationURL() {
         return generateConfirmationURL("conf");
     }
 
-    public String generateConfirmationURL(String tag) {
+    private String generateConfirmationURL(String tag) {
         String endpoint = APIEndpoints.COMMUNITY_BASE + "/mobileconf/conf?";
         String queryString = generateConfirmationQueryParams(tag);
 
         return endpoint + queryString;
     }
 
-    public String generateConfirmationQueryParams(String tag) {
-        if (deviceID != null && !deviceID.isEmpty())
+    private String generateConfirmationQueryParams(String tag) {
+        if (deviceID == null || deviceID.isEmpty())
             throw new IllegalArgumentException("Device ID is not present");
 
         Map<String, String> queryParams = generateConfirmationQueryParamsAsNVC(tag);
@@ -205,8 +210,8 @@ public final class SteamGuardAccount {
                 + queryParams.get("t") + "&m=android&tag=" + queryParams.get("tag");
     }
 
-    public Map<String, String> generateConfirmationQueryParamsAsNVC(String tag) {
-        if (deviceID != null && !deviceID.isEmpty())
+    private Map<String, String> generateConfirmationQueryParamsAsNVC(String tag) {
+        if (deviceID == null || deviceID.isEmpty())
             throw new IllegalArgumentException("Device ID is not present");
 
         long time = TimeAligner.getSteamTime();
@@ -253,6 +258,10 @@ public final class SteamGuardAccount {
         String queryString = generateConfirmationQueryParams("details");
         url += queryString;
 
+        final BasicCookieStore cookies = new BasicCookieStore();
+        session.addCookies(cookies);
+        SteamWeb.setCookieStore(cookies);
+
         String response = SteamWeb.fetch(url, new HttpParameters(HttpMethod.GET));
         if (response.isEmpty()) return null;
 
@@ -268,6 +277,10 @@ public final class SteamGuardAccount {
         queryString += generateConfirmationQueryParams(op);
         queryString += "&cid=" + conf.getId() + "&ck=" + conf.getKey();
         url += queryString;
+
+        final BasicCookieStore cookies = new BasicCookieStore();
+        session.addCookies(cookies);
+        SteamWeb.setCookieStore(cookies);
 
         String response = SteamWeb.fetch(url, new HttpParameters(HttpMethod.GET));
         if (response == null) return false;

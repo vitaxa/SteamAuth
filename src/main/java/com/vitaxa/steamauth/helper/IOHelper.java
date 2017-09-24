@@ -21,14 +21,6 @@ public final class IOHelper {
     private IOHelper() {
     }
 
-    public static void close(AutoCloseable closeable) {
-        try {
-            closeable.close();
-        } catch (Exception exc) {
-            //LogHelper.error(exc);
-        }
-    }
-
     public static void createParentDirs(Path path) throws IOException {
         Path parent = path.getParent();
         if (parent != null && !isDir(parent)) {
