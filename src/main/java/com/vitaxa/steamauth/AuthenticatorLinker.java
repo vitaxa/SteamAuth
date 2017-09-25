@@ -3,14 +3,6 @@ package com.vitaxa.steamauth;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-
-import java.lang.reflect.Type;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
-import java.util.HashMap;
-import java.util.Map;
-
 import com.google.gson.annotations.SerializedName;
 import com.google.gson.reflect.TypeToken;
 import com.vitaxa.steamauth.http.HttpMethod;
@@ -21,7 +13,13 @@ import com.vitaxa.steamauth.model.SessionData;
 import com.vitaxa.steamauth.model.SteamResponse;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.http.client.CookieStore;
-import org.apache.http.impl.client.BasicCookieStore;
+
+import java.lang.reflect.Type;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.util.HashMap;
+import java.util.Map;
 
 public class AuthenticatorLinker {
     /**
@@ -54,10 +52,7 @@ public class AuthenticatorLinker {
         this.session = session;
         this.deviceID = generateDeviceID();
 
-        this.cookieStore = new BasicCookieStore();
-        session.addCookies(this.cookieStore);
-
-        SteamWeb.setCookieStore(cookieStore);
+        SteamWeb.addCookies(session);
     }
 
     public LinkResult addAuthenticator() {

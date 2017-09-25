@@ -39,6 +39,16 @@ public class Confirmation {
         return confType;
     }
 
+    @Override
+    public String toString() {
+        return "Confirmation{" +
+                "id='" + id + '\'' +
+                ", key='" + key + '\'' +
+                ", description='" + description + '\'' +
+                ", confType=" + confType +
+                '}';
+    }
+
     public enum ConfirmationType {
         GENERIC_CONFIRMATION,
         TRADE,

@@ -4,6 +4,7 @@ import com.vitaxa.steamauth.exception.WGTokenExpiredException;
 import com.vitaxa.steamauth.helper.CommonHelper;
 import com.vitaxa.steamauth.helper.IOHelper;
 import com.vitaxa.steamauth.http.HttpParameters;
+import com.vitaxa.steamauth.model.SessionData;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
@@ -42,6 +43,10 @@ public final class SteamWeb {
     static {
         // Bind custom cookie store to the local context
         httpContext.setAttribute(HttpClientContext.COOKIE_STORE, cookieStore);
+    }
+
+    public static void addCookies(SessionData sessionData) {
+        sessionData.addCookies(cookieStore);
     }
 
     public static void addCookies(Map<String, String> cookies) {

@@ -11,7 +11,6 @@ import com.vitaxa.steamauth.http.HttpParameters;
 import com.vitaxa.steamauth.model.Confirmation;
 import com.vitaxa.steamauth.model.SessionData;
 import com.vitaxa.steamauth.model.SteamResponse;
-import org.apache.http.impl.client.BasicCookieStore;
 
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Type;
@@ -106,11 +105,11 @@ public final class SteamGuardAccount {
     public Confirmation[] fetchConfirmations() throws WGTokenInvalidException {
         String url = generateConfirmationURL();
 
-        final BasicCookieStore cookies = new BasicCookieStore();
-        session.addCookies(cookies);
-        SteamWeb.setCookieStore(cookies);
+        SteamWeb.addCookies(session);
 
         String response = SteamWeb.fetch(url, new HttpParameters(HttpMethod.GET));
+
+        System.out.println(response);
 
         if (response == null || !(confIDRegex.matcher(response).find() && confKeyRegex.matcher(response).find()
                 && confDescRegex.matcher(response).find())) {
@@ -126,14 +125,21 @@ public final class SteamGuardAccount {
         Matcher confDescs = confDescRegex.matcher(response);
 
         List<Confirmation> ret = new ArrayList<>();
-        for (int i = 0; i < confIDs.groupCount(); i++) {
-            String confID = confIDs.group(i);
-            String confKey = confKeys.group(i);
-            String confDesc = confDescs.group(i);
 
-            Confirmation conf = new Confirmation(confID, confKey, confDesc);
+        while (confIDs.find()) {
+            final String confID = confIDs.group().replaceAll("\\d+","");
 
-            ret.add(conf);
+            if (!confKeys.find()) continue;
+
+            final String confKey = confKeys.group().replaceAll("\\d+","");
+
+            if (!confDescs.find()) continue;
+
+            final String confDesc = confDescs.group();
+
+            final Confirmation confirmation = new Confirmation(confID, confKey, confDesc);
+
+            ret.add(confirmation);
         }
 
         return ret.toArray(new Confirmation[ret.size()]);
@@ -258,9 +264,7 @@ public final class SteamGuardAccount {
         String queryString = generateConfirmationQueryParams("details");
         url += queryString;
 
-        final BasicCookieStore cookies = new BasicCookieStore();
-        session.addCookies(cookies);
-        SteamWeb.setCookieStore(cookies);
+        SteamWeb.addCookies(session);
 
         String response = SteamWeb.fetch(url, new HttpParameters(HttpMethod.GET));
         if (response.isEmpty()) return null;
@@ -278,11 +282,12 @@ public final class SteamGuardAccount {
         queryString += "&cid=" + conf.getId() + "&ck=" + conf.getKey();
         url += queryString;
 
-        final BasicCookieStore cookies = new BasicCookieStore();
-        session.addCookies(cookies);
-        SteamWeb.setCookieStore(cookies);
+        SteamWeb.addCookies(session);
+
+        System.out.println("REQUEST: " + url);
 
         String response = SteamWeb.fetch(url, new HttpParameters(HttpMethod.GET));
+
         if (response == null) return false;
 
         SendConfirmationResponse confResponse = new Gson().fromJson(response, SendConfirmationResponse.class);
