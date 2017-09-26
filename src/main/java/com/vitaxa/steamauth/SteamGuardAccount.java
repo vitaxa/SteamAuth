@@ -127,11 +127,11 @@ public final class SteamGuardAccount {
         List<Confirmation> ret = new ArrayList<>();
 
         while (confIDs.find()) {
-            final String confID = confIDs.group().replaceAll("\\d+","");
+            final String confID = confIDs.group().replaceAll("\\D+","");
 
             if (!confKeys.find()) continue;
 
-            final String confKey = confKeys.group().replaceAll("\\d+","");
+            final String confKey = confKeys.group().replaceAll("\\D+","");
 
             if (!confDescs.find()) continue;
 
@@ -190,9 +190,10 @@ public final class SteamGuardAccount {
         if (confDetails == null || !confDetails.success) return -1;
 
         Pattern tradeOfferIDRegex = Pattern.compile("<div class=\"tradeoffer\" id=\"tradeofferid_(\\d+)\" >");
-        if (!tradeOfferIDRegex.matcher(confDetails.html).find()) return -1;
+        final Matcher matcher = tradeOfferIDRegex.matcher(confDetails.html);
+        if (!matcher.find()) return -1;
 
-        return Long.valueOf(tradeOfferIDRegex.matcher(confDetails.html).group(1));
+        return Long.valueOf(matcher.group().replaceAll("\\D+",""));
     }
 
     private String generateConfirmationURL() {
