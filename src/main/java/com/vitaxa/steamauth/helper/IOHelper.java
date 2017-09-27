@@ -13,10 +13,10 @@ public final class IOHelper {
 
     // File options
     private static final LinkOption[] LINK_OPTIONS = {};
-    private static final OpenOption[] READ_OPTIONS = { StandardOpenOption.READ };
-    private static final CopyOption[] COPY_OPTIONS = { StandardCopyOption.REPLACE_EXISTING };
-    private static final OpenOption[] APPEND_OPTIONS = { StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.APPEND };
-    private static final OpenOption[] WRITE_OPTIONS = { StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING };
+    private static final OpenOption[] READ_OPTIONS = {StandardOpenOption.READ};
+    private static final CopyOption[] COPY_OPTIONS = {StandardCopyOption.REPLACE_EXISTING};
+    private static final OpenOption[] APPEND_OPTIONS = {StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.APPEND};
+    private static final OpenOption[] WRITE_OPTIONS = {StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING};
 
     private IOHelper() {
     }

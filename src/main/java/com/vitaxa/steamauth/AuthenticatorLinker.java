@@ -55,6 +55,41 @@ public class AuthenticatorLinker {
         SteamWeb.addCookies(session);
     }
 
+    public static String generateDeviceID() {
+        // Generate 8 random bytes
+        final byte[] randomBytes = new byte[8];
+        final SecureRandom random = new SecureRandom();
+        random.nextBytes(randomBytes);
+
+        // Generate sha1 hash
+        try {
+            MessageDigest md = MessageDigest.getInstance("SHA-1");
+            byte[] hashedBytes = md.digest(randomBytes);
+
+            String random32 = DigestUtils.sha1Hex(hashedBytes).substring(0, 32);
+
+            return "android:" + splitOnRatios(random32, new int[]{8, 4, 4, 4, 12}, "-");
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+            return "";
+        }
+    }
+
+    private static String splitOnRatios(String str, int[] ratios, String intermediate) {
+        StringBuilder result = new StringBuilder();
+
+        int pos = 0;
+        for (int index = 0; index < ratios.length; index++) {
+            result.append(str.substring(pos, Math.min(pos + ratios[index], str.length())));
+            pos = ratios[index];
+
+            if (index < ratios.length - 1)
+                result.append(intermediate);
+        }
+
+        return result.toString();
+    }
+
     public LinkResult addAuthenticator() {
         boolean hasPhone = hasPhoneAttached();
         if (hasPhone && phoneNumber != null)
@@ -118,7 +153,8 @@ public class AuthenticatorLinker {
 
             if (response == null) return FinalizeResult.GENERAL_FAILURE;
 
-            Type responseType = new TypeToken<SteamResponse<FinalizeAuthenticatorResponse>>(){}.getType();
+            Type responseType = new TypeToken<SteamResponse<FinalizeAuthenticatorResponse>>() {
+            }.getType();
             SteamResponse steamResponse = new Gson().fromJson(response, responseType);
 
             FinalizeAuthenticatorResponse finalizeResponse = (FinalizeAuthenticatorResponse) steamResponse.getResponse();
@@ -167,26 +203,6 @@ public class AuthenticatorLinker {
         return addPhoneNumberResponse.success;
     }
 
-    public static String generateDeviceID() {
-        // Generate 8 random bytes
-        final byte[] randomBytes = new byte[8];
-        final SecureRandom random = new SecureRandom();
-        random.nextBytes(randomBytes);
-
-        // Generate sha1 hash
-        try {
-            MessageDigest  md = MessageDigest.getInstance("SHA-1");
-            byte[] hashedBytes = md.digest(randomBytes);
-
-            String random32 = DigestUtils.sha1Hex(hashedBytes).substring(0, 32);
-
-            return "android:" + splitOnRatios(random32, new int[] { 8, 4, 4, 4, 12 }, "-");
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-            return "";
-        }
-    }
-
     private boolean addPhoneNumber() {
         Map<String, String> postData = new HashMap<>(3);
         postData.put("op", "add_phone_number");
@@ -219,27 +235,12 @@ public class AuthenticatorLinker {
         return hasPhoneResponse.hasPhone;
     }
 
-    private static String splitOnRatios(String str, int[] ratios, String intermediate) {
-        StringBuilder result = new StringBuilder();
-
-        int pos = 0;
-        for (int index = 0; index < ratios.length; index++) {
-            result.append(str.substring(pos, Math.min(pos + ratios[index], str.length())));
-            pos = ratios[index];
-
-            if (index < ratios.length- 1)
-                result.append(intermediate);
-        }
-
-        return result.toString();
+    public String getPhoneNumber() {
+        return phoneNumber;
     }
 
     public void setPhoneNumber(String phoneNumber) {
         this.phoneNumber = phoneNumber;
-    }
-
-    public String getPhoneNumber() {
-        return phoneNumber;
     }
 
     public String getDeviceID() {

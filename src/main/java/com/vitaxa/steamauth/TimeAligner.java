@@ -11,7 +11,9 @@ import com.vitaxa.steamauth.model.SteamResponse;
 import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 
 public final class TimeAligner {
     private static final ThreadFactory THREAD_FACTORY = r -> CommonHelper.newThread("TimeAligner Thread", true, r);
@@ -44,9 +46,8 @@ public final class TimeAligner {
         params.put("steamid", "0");
         String response = SteamWeb.fetch(APIEndpoints.TWO_FACTOR_TIME_QUERY, new HttpParameters(params, HttpMethod.POST));
 
-        System.out.println("RESPONSE ALIGNTIME " +  response);
-
-        Type responseType = new TypeToken<SteamResponse<TimeQuery>>(){}.getType();
+        Type responseType = new TypeToken<SteamResponse<TimeQuery>>() {
+        }.getType();
         SteamResponse steamResponse = new Gson().fromJson(response, responseType);
 
         TimeQuery query = (TimeQuery) steamResponse.getResponse();

@@ -4,9 +4,7 @@ import org.apache.http.client.CookieStore;
 import org.apache.http.impl.cookie.BasicClientCookie;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class SessionData {
     private String sessionID;
@@ -26,7 +24,7 @@ public class SessionData {
 
         cookies.add(new CustomCookie("mobileClientVersion", "0 (2.1.3)"));
         cookies.add(new CustomCookie("mobileClient", "android"));
-        cookies.add(new CustomCookie("steamid",  String.valueOf(steamID)));
+        cookies.add(new CustomCookie("steamid", String.valueOf(steamID)));
         cookies.add(new CustomCookie("steamLogin", steamLogin));
         cookies.add(new CustomCookie("steamLoginSecure", steamLoginSecure, true));
         cookies.add(new CustomCookie("Steam_Language", ""));

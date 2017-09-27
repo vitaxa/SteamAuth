@@ -2,7 +2,6 @@ package com.vitaxa.steamauth.model;
 
 import com.google.gson.Gson;
 import com.google.gson.annotations.SerializedName;
-import com.vitaxa.steamauth.UserLogin;
 
 public final class LoginResponse {
     @SerializedName("success")

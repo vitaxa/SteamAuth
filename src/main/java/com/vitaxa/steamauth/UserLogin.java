@@ -13,7 +13,8 @@ import org.apache.http.cookie.Cookie;
 
 import javax.crypto.Cipher;
 import java.math.BigInteger;
-import java.security.*;
+import java.security.KeyFactory;
+import java.security.SecureRandom;
 import java.security.interfaces.RSAPublicKey;
 import java.security.spec.RSAPublicKeySpec;
 import java.util.Base64;
@@ -24,23 +25,18 @@ import java.util.Map;
 public final class UserLogin {
     public final String username;
     public final String password;
+    private final Map<String, String> cookies;
     public long steamID;
-
     public boolean requiresCaptcha;
     public String captchaGID = null;
     public String captchaText = null;
-
     public boolean requiresEmail;
     public String emailDomain = null;
     public String emailCode = null;
-
     public boolean requires2FA;
     public String twoFactorCode = null;
-
     public SessionData session = null;
     public boolean loggedIn = false;
-
-    private final Map<String, String> cookies;
 
     public UserLogin(String username, String password) {
         this.username = username;

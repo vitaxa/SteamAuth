@@ -6,7 +6,6 @@ import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
-import java.util.Formatter;
 
 public final class HMACSHA1 {
     private static final String HMAC_SHA1_ALGORITHM = "HmacSHA1";

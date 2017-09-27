@@ -73,6 +73,7 @@ public final class SteamWeb {
     public static String fetch(String url, HttpParameters params) {
         return fetch(url, params, APIEndpoints.COMMUNITY_BASE, Collections.emptyMap());
     }
+
     public static String fetch(String url, HttpParameters params, Map<String, String> header) {
         return fetch(url, params, APIEndpoints.COMMUNITY_BASE, header);
     }
@@ -96,12 +97,13 @@ public final class SteamWeb {
 
     /**
      * Perform a mobile login request
-     * @param url API url
+     *
+     * @param url    API url
      * @param method GET or POST
      */
     public static String mobileLoginRequest(String url, HttpParameters method) {
         return fetch(url, method, APIEndpoints.COMMUNITY_BASE +
-                "/mobilelogin?oauth_client_id=DE45CD61&oauth_scope=read_profile%20write_profile%20read_client%20write_client",
+                        "/mobilelogin?oauth_client_id=DE45CD61&oauth_scope=read_profile%20write_profile%20read_client%20write_client",
                 Collections.emptyMap());
     }
 
@@ -137,7 +139,7 @@ public final class SteamWeb {
     }
 
     private static <T extends HttpRequestBase> HttpResponse openConnection(HttpRequestBase httpRequest, Class<T> requestType,
-                                                                    String referer, Map<String, String> header) {
+                                                                           String referer, Map<String, String> header) {
         T request = requestType.cast(httpRequest);
         try {
             // Add header to request

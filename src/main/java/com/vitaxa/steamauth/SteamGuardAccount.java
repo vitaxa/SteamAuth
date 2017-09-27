@@ -21,47 +21,33 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public final class SteamGuardAccount {
-    @SerializedName("shared_secret")
-    private String sharedSecret;
-
-    @SerializedName("serial_number")
-    private String serialNumber;
-
-    @SerializedName("revocation_code")
-    private String revocationCode;
-
-    @SerializedName("uri")
-    private String URI;
-
-    @SerializedName("server_time")
-    private long serverTime;
-
-    @SerializedName("account_name")
-    private String accountName;
-
-    @SerializedName("token_gid")
-    private String tokenGID;
-
-    @SerializedName("identity_secret")
-    private String identitySecret;
-
-    @SerializedName("secret_1")
-    private String secret1;
-
-    @SerializedName("status")
-    private int status;
-
-    @SerializedName("device_id")
-    private String deviceID;
-
+    private static byte[] steamGuardCodeTranslations = new byte[]{50, 51, 52, 53, 54, 55, 56, 57, 66, 67, 68, 70, 71, 72, 74, 75, 77, 78, 80, 81, 82, 84, 86, 87, 88, 89};
     //Set to true if the authenticator has actually been applied to the account.
     @SerializedName("fully_enrolled")
     public boolean fullyEnrolled;
-
+    @SerializedName("shared_secret")
+    private String sharedSecret;
+    @SerializedName("serial_number")
+    private String serialNumber;
+    @SerializedName("revocation_code")
+    private String revocationCode;
+    @SerializedName("uri")
+    private String URI;
+    @SerializedName("server_time")
+    private long serverTime;
+    @SerializedName("account_name")
+    private String accountName;
+    @SerializedName("token_gid")
+    private String tokenGID;
+    @SerializedName("identity_secret")
+    private String identitySecret;
+    @SerializedName("secret_1")
+    private String secret1;
+    @SerializedName("status")
+    private int status;
+    @SerializedName("device_id")
+    private String deviceID;
     private SessionData session;
-
-    private static byte[] steamGuardCodeTranslations = new byte[] { 50, 51, 52, 53, 54, 55, 56, 57, 66, 67, 68, 70, 71, 72, 74, 75, 77, 78, 80, 81, 82, 84, 86, 87, 88, 89 };
-
     private Pattern confIDRegex = Pattern.compile("data-confid=\"(\\d+)\"");
     private Pattern confKeyRegex = Pattern.compile("data-key=\"(\\d+)\"");
     private Pattern confDescRegex = Pattern.compile("<div>((Confirm|Trade with|Sell -) .+)</div>");
@@ -89,7 +75,8 @@ public final class SteamGuardAccount {
             String response = SteamWeb.mobileLoginRequest(APIEndpoints.STEAMAPI_BASE +
                     "/ITwoFactorService/RemoveAuthenticator/v0001", new HttpParameters(postData, HttpMethod.POST));
 
-            Type responseType = new TypeToken<SteamResponse<RemoveAuthenticatorResponse>>(){}.getType();
+            Type responseType = new TypeToken<SteamResponse<RemoveAuthenticatorResponse>>() {
+            }.getType();
 
             SteamResponse steamResponse = new Gson().fromJson(response, responseType);
 
@@ -127,11 +114,11 @@ public final class SteamGuardAccount {
         List<Confirmation> ret = new ArrayList<>();
 
         while (confIDs.find()) {
-            final String confID = confIDs.group().replaceAll("\\D+","");
+            final String confID = confIDs.group().replaceAll("\\D+", "");
 
             if (!confKeys.find()) continue;
 
-            final String confKey = confKeys.group().replaceAll("\\D+","");
+            final String confKey = confKeys.group().replaceAll("\\D+", "");
 
             if (!confDescs.find()) continue;
 
@@ -159,7 +146,7 @@ public final class SteamGuardAccount {
         // Time for code
         time /= 30L;
         for (int i = 8; i > 0; i--) {
-            timeArray[i - 1] = (byte)time;
+            timeArray[i - 1] = (byte) time;
             time >>= 8;
         }
 
@@ -170,7 +157,7 @@ public final class SteamGuardAccount {
 
             // the last 4 bits of the hashedData say where the code starts
             // (e.g. if last 4 bit are 1100, we start at byte 12)
-            byte b = (byte)(hashedData[19] & 0xF);
+            byte b = (byte) (hashedData[19] & 0xF);
 
             int codePoint = (hashedData[b] & 0x7F) << 24 | (hashedData[b + 1] & 0xFF) << 16 | (hashedData[b + 2] & 0xFF) << 8 | (hashedData[b + 3] & 0xFF);
 
@@ -193,7 +180,7 @@ public final class SteamGuardAccount {
         final Matcher matcher = tradeOfferIDRegex.matcher(confDetails.html);
         if (!matcher.find()) return -1;
 
-        return Long.valueOf(matcher.group().replaceAll("\\D+",""));
+        return Long.valueOf(matcher.group().replaceAll("\\D+", ""));
     }
 
     private String generateConfirmationURL() {
@@ -246,7 +233,8 @@ public final class SteamGuardAccount {
 
         if (response.isEmpty()) return false;
 
-        Type responseType = new TypeToken<SteamResponse<RefreshSessionDataResponse>>(){}.getType();
+        Type responseType = new TypeToken<SteamResponse<RefreshSessionDataResponse>>() {
+        }.getType();
         RefreshSessionDataResponse refreshResponse = new Gson().fromJson(response, responseType);
 
         if (refreshResponse.token == null) return false;
@@ -313,7 +301,7 @@ public final class SteamGuardAccount {
             if (n3 <= 0) {
                 break;
             }
-            array[n4] = (byte)time;
+            array[n4] = (byte) time;
             time >>= 8;
             n3 = n4;
         }
