@@ -96,8 +96,6 @@ public final class SteamGuardAccount {
 
         String response = SteamWeb.fetch(url, new HttpParameters(HttpMethod.GET));
 
-        System.out.println(response);
-
         if (response == null || !(confIDRegex.matcher(response).find() && confKeyRegex.matcher(response).find()
                 && confDescRegex.matcher(response).find())) {
             if (response == null || !response.contains("<div>Nothing to confirm</div>")) {
@@ -272,8 +270,6 @@ public final class SteamGuardAccount {
         url += queryString;
 
         SteamWeb.addCookies(session);
-
-        System.out.println("REQUEST: " + url);
 
         String response = SteamWeb.fetch(url, new HttpParameters(HttpMethod.GET));
 
