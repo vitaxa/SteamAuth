@@ -6,7 +6,7 @@
 
     <groupId>com.vitaxa.steamauth</groupId>
     <artifactId>steamauth</artifactId>
-    <version>0.1.2a</version>
+    <version>0.4.5</version>
 
     <build>
         <plugins>
