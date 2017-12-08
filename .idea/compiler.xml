@@ -7,9 +7,11 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="SteamAuth" />
+        <module name="steamauth" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
+      <module name="steamauth" target="1.8" />
       <module name="SteamAuth" target="1.8" />
     </bytecodeTargetLevel>
   </component>
