@@ -48,9 +48,10 @@ public final class SteamGuardAccount {
     @SerializedName("device_id")
     private String deviceID;
     private SessionData session;
-    private Pattern confIDRegex = Pattern.compile("data-confid=\"(\\d+)\"");
-    private Pattern confKeyRegex = Pattern.compile("data-key=\"(\\d+)\"");
-    private Pattern confDescRegex = Pattern.compile("<div>((Confirm|Trade with|Sell -) .+)</div>");
+    private final Pattern confIDRegex = Pattern.compile("data-confid=\"(\\d+)\"");
+    private final Pattern confKeyRegex = Pattern.compile("data-key=\"(\\d+)\"");
+    private final Pattern confDescRegex = Pattern.compile("<div>((Confirm|Trade with|Sell -) .+)</div>");
+    private final Pattern confRegex = Pattern.compile("<div class=\"mobileconf_list_entry\" id=\"conf[0-9]+\" data-confid=\"(\\d+)\" data-key=\"(\\d+)\" data-type=\"(\\d+)\" data-creator=\"(\\d+)\"");
 
     public boolean acceptConfirmation(Confirmation conf) {
         return sendConfirmationAjax(conf, "allow");
@@ -90,41 +91,34 @@ public final class SteamGuardAccount {
     }
 
     public Confirmation[] fetchConfirmations() throws WGTokenInvalidException {
-        String url = generateConfirmationURL();
+        final String url = generateConfirmationURL();
 
         SteamWeb.addCookies(session);
 
-        String response = SteamWeb.fetch(url, new HttpParameters(HttpMethod.GET));
+        final String response = SteamWeb.fetch(url, new HttpParameters(HttpMethod.GET));
 
-        if (response == null || !(confIDRegex.matcher(response).find() && confKeyRegex.matcher(response).find()
-                && confDescRegex.matcher(response).find())) {
+        if (response == null || !confRegex.matcher(response).find()) {
             if (response == null || !response.contains("<div>Nothing to confirm</div>")) {
-                throw new WGTokenInvalidException("Nothing to confirm");
+                throw new WGTokenInvalidException();
             }
             return new Confirmation[0];
         }
 
-        // Trying to parse response
-        Matcher confIDs = confIDRegex.matcher(response);
-        Matcher confKeys = confKeyRegex.matcher(response);
-        Matcher confDescs = confDescRegex.matcher(response);
+        final Matcher confirmation = confRegex.matcher(response);
 
-        List<Confirmation> ret = new ArrayList<>();
+        final List<Confirmation> ret = new ArrayList<>();
 
-        while (confIDs.find()) {
-            final String confID = confIDs.group().replaceAll("\\D+", "");
+        while (confirmation.find()) {
 
-            if (!confKeys.find()) continue;
+            final long confId = Long.parseLong(confirmation.group(1));
 
-            final String confKey = confKeys.group().replaceAll("\\D+", "");
+            final long confKey = Long.parseLong(confirmation.group(2));
 
-            if (!confDescs.find()) continue;
+            final int confType = Integer.parseInt(confirmation.group(3));
 
-            final String confDesc = confDescs.group();
+            final long confCreator = Long.parseLong(confirmation.group(4));
 
-            final Confirmation confirmation = new Confirmation(confID, confKey, confDesc);
-
-            ret.add(confirmation);
+            ret.add(new Confirmation(confId, confKey, confType, confCreator));
         }
 
         return ret.toArray(new Confirmation[ret.size()]);
@@ -171,14 +165,11 @@ public final class SteamGuardAccount {
     }
 
     public long getConfirmationTradeOfferID(Confirmation conf) {
-        ConfirmationDetailsResponse confDetails = getConfirmationDetails(conf);
-        if (confDetails == null || !confDetails.success) return -1;
+        if (conf.getConfType() != Confirmation.ConfirmationType.TRADE) {
+            throw new IllegalArgumentException("conf must be a trade confirmation.");
+        }
 
-        Pattern tradeOfferIDRegex = Pattern.compile("<div class=\"tradeoffer\" id=\"tradeofferid_(\\d+)\" >");
-        final Matcher matcher = tradeOfferIDRegex.matcher(confDetails.html);
-        if (!matcher.find()) return -1;
-
-        return Long.valueOf(matcher.group().replaceAll("\\D+", ""));
+        return conf.getCreator();
     }
 
     private String generateConfirmationURL() {

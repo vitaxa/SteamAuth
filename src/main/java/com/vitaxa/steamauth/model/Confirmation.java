@@ -1,38 +1,58 @@
 package com.vitaxa.steamauth.model;
 
 public class Confirmation {
-    public String id;
-    public String key;
-    public String description;
 
-    public ConfirmationType confType;
+    // The ID of this confirmation
+    private final Long id;
 
-    public Confirmation(String id, String key, String description) {
+    // The unique key used to act upon this confirmation.
+    private final Long key;
+
+    // The value of the data-type HTML attribute returned for this contribution.
+    private final Integer type;
+
+    // Represents either the Trade Offer ID or market transaction ID that caused this confirmation to be created.
+    private final Long creator;
+
+    private ConfirmationType confType;
+
+    public Confirmation(Long id, Long key, Integer type, Long creator) {
         this.id = id;
         this.key = key;
-        this.description = description;
+        this.type = type;
+        this.creator = creator;
 
-        if (description == null || description.isEmpty()) {
-            confType = ConfirmationType.UNKNOWN;
-        } else if (description.startsWith("Confirm")) {
-            confType = ConfirmationType.GENERIC_CONFIRMATION;
-        } else if (description.startsWith("Trade with")) {
-            confType = ConfirmationType.TRADE;
-        } else if (description.startsWith("Sell -")) {
-            confType = ConfirmationType.MARKET_SELL_TRANSACTION;
+        // Do a switch simply because we're not 100% certain of all the possible types.
+        switch (type) {
+            case 1:
+                confType = ConfirmationType.GENERIC_CONFIRMATION;
+                break;
+            case 2:
+                confType = ConfirmationType.TRADE;
+                break;
+            case 3:
+                confType = ConfirmationType.MARKET_SELL_TRANSACTION;
+                break;
+            default:
+                confType = ConfirmationType.UNKNOWN;
+
         }
     }
 
-    public String getId() {
+    public Long getId() {
         return id;
     }
 
-    public String getKey() {
+    public Long getKey() {
         return key;
     }
 
-    public String getDescription() {
-        return description;
+    public Integer getType() {
+        return type;
+    }
+
+    public Long getCreator() {
+        return creator;
     }
 
     public ConfirmationType getConfType() {
@@ -44,7 +64,8 @@ public class Confirmation {
         return "Confirmation{" +
                 "id='" + id + '\'' +
                 ", key='" + key + '\'' +
-                ", description='" + description + '\'' +
+                ", type=" + type +
+                ", creator=" + creator +
                 ", confType=" + confType +
                 '}';
     }
