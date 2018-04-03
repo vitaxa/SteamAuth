@@ -6,6 +6,9 @@ public class WGTokenInvalidException extends Throwable implements Serializable {
 
     private static final long serialVersionUID = 2947323190503240341L;
 
+    public WGTokenInvalidException() {
+    }
+
     public WGTokenInvalidException(String message) {
         super(message);
     }
