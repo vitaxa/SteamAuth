@@ -48,9 +48,6 @@ public final class SteamGuardAccount {
     @SerializedName("device_id")
     private String deviceID;
     private SessionData session;
-    private final Pattern confIDRegex = Pattern.compile("data-confid=\"(\\d+)\"");
-    private final Pattern confKeyRegex = Pattern.compile("data-key=\"(\\d+)\"");
-    private final Pattern confDescRegex = Pattern.compile("<div>((Confirm|Trade with|Sell -) .+)</div>");
     private final Pattern confRegex = Pattern.compile("<div class=\"mobileconf_list_entry\" id=\"conf[0-9]+\" data-confid=\"(\\d+)\" data-key=\"(\\d+)\" data-type=\"(\\d+)\" data-creator=\"(\\d+)\"");
 
     public boolean acceptConfirmation(Confirmation conf) {
