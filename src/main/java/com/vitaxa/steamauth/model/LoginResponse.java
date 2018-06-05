@@ -1,36 +1,36 @@
 package com.vitaxa.steamauth.model;
 
-import com.google.gson.Gson;
-import com.google.gson.annotations.SerializedName;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.vitaxa.steamauth.helper.Json;
 
 public final class LoginResponse {
-    @SerializedName("success")
+    @JsonProperty
     private boolean success;
 
-    @SerializedName("login_complete")
+    @JsonProperty("login_complete")
     private boolean loginComplete;
 
-    @SerializedName("oauth")
+    @JsonProperty("oauth")
     private String oAuthDataString;
 
     private OAuth oAuthData;
 
-    @SerializedName("captcha_needed")
+    @JsonProperty("captcha_needed")
     private boolean captchaNeeded;
 
-    @SerializedName("captcha_gid")
+    @JsonProperty("captcha_gid")
     private String captchaGID;
 
-    @SerializedName("emailsteamid")
+    @JsonProperty("emailsteamid")
     private long emailSteamID;
 
-    @SerializedName("emailauth_needed")
+    @JsonProperty("emailauth_needed")
     private boolean emailAuthNeeded;
 
-    @SerializedName("requires_twofactor")
+    @JsonProperty("requires_twofactor")
     private boolean twoFactorNeeded;
 
-    @SerializedName("message")
+    @JsonProperty("message")
     private String message;
 
     public boolean isSuccess() {
@@ -70,23 +70,23 @@ public final class LoginResponse {
     }
 
     public OAuth getoAuthData() {
-        return oAuthDataString != null ? new Gson().fromJson(oAuthDataString, OAuth.class) : null;
+        return oAuthDataString != null ? Json.getInstance().fromJson(oAuthDataString, OAuth.class) : null;
     }
 
     public final class OAuth {
-        @SerializedName("steamid")
+        @JsonProperty("steamid")
         private long steamID;
 
-        @SerializedName("oauth_token")
+        @JsonProperty("oauth_token")
         private String oAuthToken;
 
-        @SerializedName("wgtoken")
+        @JsonProperty("wgtoken")
         private String steamLogin;
 
-        @SerializedName("wgtoken_secure")
+        @JsonProperty("wgtoken_secure")
         private String steamLoginSecure;
 
-        @SerializedName("webcookie")
+        @JsonProperty("webcookie")
         private String webcookie;
 
         public long getSteamID() {

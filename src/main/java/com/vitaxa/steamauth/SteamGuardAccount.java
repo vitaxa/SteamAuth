@@ -1,19 +1,19 @@
 package com.vitaxa.steamauth;
 
-import com.google.gson.Gson;
-import com.google.gson.annotations.SerializedName;
-import com.google.gson.reflect.TypeToken;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.vitaxa.steamauth.crypto.HMACSHA1;
 import com.vitaxa.steamauth.exception.WGTokenInvalidException;
 import com.vitaxa.steamauth.helper.IOHelper;
+import com.vitaxa.steamauth.helper.Json;
 import com.vitaxa.steamauth.http.HttpMethod;
 import com.vitaxa.steamauth.http.HttpParameters;
 import com.vitaxa.steamauth.model.Confirmation;
 import com.vitaxa.steamauth.model.SessionData;
 import com.vitaxa.steamauth.model.SteamResponse;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.lang.reflect.Type;
 import java.net.URLEncoder;
 import java.security.InvalidKeyException;
 import java.util.*;
@@ -23,29 +23,29 @@ import java.util.regex.Pattern;
 public final class SteamGuardAccount {
     private static byte[] steamGuardCodeTranslations = new byte[]{50, 51, 52, 53, 54, 55, 56, 57, 66, 67, 68, 70, 71, 72, 74, 75, 77, 78, 80, 81, 82, 84, 86, 87, 88, 89};
     //Set to true if the authenticator has actually been applied to the account.
-    @SerializedName("fully_enrolled")
+    @JsonProperty("fully_enrolled")
     public boolean fullyEnrolled;
-    @SerializedName("shared_secret")
+    @JsonProperty("shared_secret")
     private String sharedSecret;
-    @SerializedName("serial_number")
+    @JsonProperty("serial_number")
     private String serialNumber;
-    @SerializedName("revocation_code")
+    @JsonProperty("revocation_code")
     private String revocationCode;
-    @SerializedName("uri")
+    @JsonProperty("uri")
     private String URI;
-    @SerializedName("server_time")
+    @JsonProperty("server_time")
     private long serverTime;
-    @SerializedName("account_name")
+    @JsonProperty("account_name")
     private String accountName;
-    @SerializedName("token_gid")
+    @JsonProperty("token_gid")
     private String tokenGID;
-    @SerializedName("identity_secret")
+    @JsonProperty("identity_secret")
     private String identitySecret;
-    @SerializedName("secret_1")
+    @JsonProperty("secret_1")
     private String secret1;
-    @SerializedName("status")
+    @JsonProperty("status")
     private int status;
-    @SerializedName("device_id")
+    @JsonProperty("device_id")
     private String deviceID;
     private SessionData session;
     private final Pattern confRegex = Pattern.compile("<div class=\"mobileconf_list_entry\" id=\"conf[0-9]+\" data-confid=\"(\\d+)\" data-key=\"(\\d+)\" data-type=\"(\\d+)\" data-creator=\"(\\d+)\"");
@@ -63,7 +63,7 @@ public final class SteamGuardAccount {
     }
 
     public boolean deactivateAuthenticator(int scheme) {
-        Map<String, String> postData = new HashMap<>(4);
+        Map<String, String> postData = new HashMap<>();
         postData.put("steamid", String.valueOf(session.getSteamID()));
         postData.put("steamguard_scheme", String.valueOf(scheme));
         postData.put("revocation_code", revocationCode);
@@ -73,11 +73,8 @@ public final class SteamGuardAccount {
             String response = SteamWeb.mobileLoginRequest(APIEndpoints.STEAMAPI_BASE +
                     "/ITwoFactorService/RemoveAuthenticator/v0001", new HttpParameters(postData, HttpMethod.POST));
 
-            Type responseType = new TypeToken<SteamResponse<RemoveAuthenticatorResponse>>() {
-            }.getType();
-
-            SteamResponse steamResponse = new Gson().fromJson(response, responseType);
-
+            SteamResponse steamResponse = Json.getInstance().mapper().readValue(response, new TypeReference<SteamResponse<RemoveAuthenticatorResponse>>() {
+            });
             RemoveAuthenticatorResponse removeResponse = (RemoveAuthenticatorResponse) steamResponse.getResponse();
 
             return !(removeResponse == null || !removeResponse.isSuccess());
@@ -219,17 +216,20 @@ public final class SteamGuardAccount {
 
         if (response.isEmpty()) return false;
 
-        Type responseType = new TypeToken<SteamResponse<RefreshSessionDataResponse>>() {
-        }.getType();
-        RefreshSessionDataResponse refreshResponse = new Gson().fromJson(response, responseType);
+        try {
+            RefreshSessionDataResponse refreshResponse = Json.getInstance().mapper().readValue(response,
+                    new TypeReference<SteamResponse<RefreshSessionDataResponse>>() {
+                    });
+            if (refreshResponse.token == null) return false;
 
-        if (refreshResponse.token == null) return false;
+            String token = session.getSteamID() + "%7C%7C" + refreshResponse.token;
+            String tokenSecure = session.getSteamID() + "%7C%7C" + refreshResponse.tokenSecure;
 
-        String token = session.getSteamID() + "%7C%7C" + refreshResponse.token;
-        String tokenSecure = session.getSteamID() + "%7C%7C" + refreshResponse.tokenSecure;
-
-        session.setSteamLogin(token);
-        session.setSteamLoginSecure(tokenSecure);
+            session.setSteamLogin(token);
+            session.setSteamLoginSecure(tokenSecure);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
         return true;
     }
@@ -244,7 +244,12 @@ public final class SteamGuardAccount {
         String response = SteamWeb.fetch(url, new HttpParameters(HttpMethod.GET));
         if (response.isEmpty()) return null;
 
-        ConfirmationDetailsResponse confResponse = new Gson().fromJson(response, ConfirmationDetailsResponse.class);
+        ConfirmationDetailsResponse confResponse = null;
+        try {
+            confResponse = Json.getInstance().mapper().readValue(response, ConfirmationDetailsResponse.class);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         if (confResponse == null) return null;
 
         return confResponse;
@@ -263,7 +268,12 @@ public final class SteamGuardAccount {
 
         if (response == null) return false;
 
-        SendConfirmationResponse confResponse = new Gson().fromJson(response, SendConfirmationResponse.class);
+        SendConfirmationResponse confResponse = null;
+        try {
+            confResponse = Json.getInstance().mapper().readValue(response, SendConfirmationResponse.class);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
         return confResponse.success;
     }
@@ -345,15 +355,15 @@ public final class SteamGuardAccount {
     }
 
     private class RefreshSessionDataResponse {
-        @SerializedName("token")
+        @JsonProperty("token")
         public String token;
 
-        @SerializedName("token_secure")
+        @JsonProperty("token_secure")
         public String tokenSecure;
     }
 
     private class RemoveAuthenticatorResponse {
-        @SerializedName("success")
+        @JsonProperty("success")
         private boolean success;
 
         public boolean isSuccess() {

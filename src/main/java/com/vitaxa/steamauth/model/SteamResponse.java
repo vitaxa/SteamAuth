@@ -1,9 +1,10 @@
 package com.vitaxa.steamauth.model;
 
-import com.google.gson.annotations.SerializedName;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 
 public class SteamResponse<T> {
-    @SerializedName("response")
+    @JsonProperty("response")
     private T response;
 
     public T getResponse() {
