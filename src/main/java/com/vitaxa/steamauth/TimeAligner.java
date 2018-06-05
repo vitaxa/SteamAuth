@@ -1,12 +1,12 @@
 package com.vitaxa.steamauth;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.vitaxa.steamauth.helper.CommonHelper;
 import com.vitaxa.steamauth.helper.Json;
 import com.vitaxa.steamauth.http.HttpMethod;
 import com.vitaxa.steamauth.http.HttpParameters;
 import com.vitaxa.steamauth.model.SteamResponse;
+import com.vitaxa.steamauth.model.TimeQuery;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -52,11 +52,6 @@ public final class TimeAligner {
 
         timeDifference = (int) (query.serverTime - currentTime);
         aligned = true;
-    }
-
-    private final class TimeQuery {
-        @JsonProperty("server_time")
-        public long serverTime;
     }
 
 }
