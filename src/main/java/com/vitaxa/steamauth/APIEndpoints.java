@@ -7,7 +7,4 @@ public class APIEndpoints {
     public static final String TWO_FACTOR_BASE = STEAMAPI_BASE + "/ITwoFactorService/%s/v0001";
     public static String MOBILEAUTH_GETWGTOKEN = MOBILEAUTH_BASE.replace("%s", "GetWGToken");
     public static String TWO_FACTOR_TIME_QUERY = TWO_FACTOR_BASE.replace("%s", "QueryTime");
-
-    private APIEndpoints() {
-    }
 }

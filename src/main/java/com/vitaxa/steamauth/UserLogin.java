@@ -1,9 +1,9 @@
 package com.vitaxa.steamauth;
 
-import com.google.gson.Gson;
-import com.google.gson.annotations.SerializedName;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.vitaxa.steamauth.helper.CommonHelper;
 import com.vitaxa.steamauth.helper.IOHelper;
+import com.vitaxa.steamauth.helper.Json;
 import com.vitaxa.steamauth.http.HttpMethod;
 import com.vitaxa.steamauth.http.HttpParameters;
 import com.vitaxa.steamauth.model.LoginResponse;
@@ -69,7 +69,7 @@ public final class UserLogin {
         if (response == null || response.contains("<BODY>\nAn error occurred while processing your request."))
             return LoginResult.GENERAL_FAILURE;
 
-        RSAResponse rsaResponse = new Gson().fromJson(response, RSAResponse.class);
+        RSAResponse rsaResponse = Json.getInstance().fromJson(response, RSAResponse.class);
 
         if (!rsaResponse.success)
             return LoginResult.BAD_RSA;
@@ -115,7 +115,7 @@ public final class UserLogin {
 
         response = SteamWeb.mobileLoginRequest(APIEndpoints.COMMUNITY_BASE + "/login/dologin", new HttpParameters(postData, HttpMethod.POST));
 
-        LoginResponse loginResponse = new Gson().fromJson(response, LoginResponse.class);
+        LoginResponse loginResponse = Json.getInstance().fromJson(response, LoginResponse.class);
 
         if (loginResponse.getMessage() != null && loginResponse.getMessage().contains("The account name or password that you have entered is incorrect.")) {
             return LoginResult.BAD_CREDENTIALS;
@@ -172,19 +172,19 @@ public final class UserLogin {
     }
 
     private final class RSAResponse {
-        @SerializedName("success")
+        @JsonProperty("success")
         public boolean success;
 
-        @SerializedName("publickey_exp")
+        @JsonProperty("publickey_exp")
         public String exponent;
 
-        @SerializedName("publickey_mod")
+        @JsonProperty("publickey_mod")
         public String modulus;
 
-        @SerializedName("timestamp")
+        @JsonProperty("timestamp")
         public String timestamp;
 
-        @SerializedName("steamid")
+        @JsonProperty("steamid")
         public long steamID;
     }
 }

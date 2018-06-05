@@ -1,10 +1,8 @@
 package com.vitaxa.steamauth;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import com.google.gson.annotations.SerializedName;
-import com.google.gson.reflect.TypeToken;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.vitaxa.steamauth.helper.Json;
 import com.vitaxa.steamauth.http.HttpMethod;
 import com.vitaxa.steamauth.http.HttpParameters;
 import com.vitaxa.steamauth.model.FinalizeResult;
@@ -14,7 +12,7 @@ import com.vitaxa.steamauth.model.SteamResponse;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.http.client.CookieStore;
 
-import java.lang.reflect.Type;
+import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
@@ -113,7 +111,12 @@ public class AuthenticatorLinker {
                 new HttpParameters(postData, HttpMethod.POST));
         if (response == null) return LinkResult.GENERAL_FAILURE;
 
-        AddAuthenticatorResponse addAuthenticatorResponse = new Gson().fromJson(response, AddAuthenticatorResponse.class);
+        AddAuthenticatorResponse addAuthenticatorResponse = null;
+        try {
+            addAuthenticatorResponse = Json.getInstance().mapper().readValue(response, AddAuthenticatorResponse.class);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
         if (addAuthenticatorResponse == null || addAuthenticatorResponse.response == null) {
             return LinkResult.GENERAL_FAILURE;
@@ -153,9 +156,9 @@ public class AuthenticatorLinker {
 
             if (response == null) return FinalizeResult.GENERAL_FAILURE;
 
-            Type responseType = new TypeToken<SteamResponse<FinalizeAuthenticatorResponse>>() {
-            }.getType();
-            SteamResponse steamResponse = new Gson().fromJson(response, responseType);
+            final SteamResponse<FinalizeAuthenticatorResponse> steamResponse = Json.getInstance().fromJson(response,
+                    new TypeReference<SteamResponse<FinalizeAuthenticatorResponse>>() {
+                    });
 
             FinalizeAuthenticatorResponse finalizeResponse = (FinalizeAuthenticatorResponse) steamResponse.getResponse();
 
@@ -196,15 +199,13 @@ public class AuthenticatorLinker {
 
         if (response == null) return false;
 
-        AddPhoneResponse addPhoneNumberResponse = new Gson().fromJson(response, AddPhoneResponse.class);
-
-        JsonObject responseObject = new JsonParser().parse(response).getAsJsonObject();
+        final AddPhoneResponse addPhoneNumberResponse = Json.getInstance().fromJson(response, AddPhoneResponse.class);
 
         return addPhoneNumberResponse.success;
     }
 
     private boolean addPhoneNumber() {
-        Map<String, String> postData = new HashMap<>(3);
+        Map<String, String> postData = new HashMap<>();
         postData.put("op", "add_phone_number");
         postData.put("arg", phoneNumber);
         postData.put("sessionid", session.getSessionID());
@@ -214,13 +215,13 @@ public class AuthenticatorLinker {
 
         if (response == null) return false;
 
-        AddPhoneResponse addPhoneNumberResponse = new Gson().fromJson(response, AddPhoneResponse.class);
+        final AddPhoneResponse addPhoneNumberResponse = Json.getInstance().fromJson(response, AddPhoneResponse.class);
 
         return addPhoneNumberResponse.success;
     }
 
     private boolean hasPhoneAttached() {
-        Map<String, String> postData = new HashMap<>(3);
+        Map<String, String> postData = new HashMap<>();
         postData.put("op", "has_phone");
         postData.put("arg", "null");
         postData.put("sessionid", session.getSessionID());
@@ -230,7 +231,7 @@ public class AuthenticatorLinker {
 
         if (response == null) return false;
 
-        HasPhoneResponse hasPhoneResponse = new Gson().fromJson(response, HasPhoneResponse.class);
+        HasPhoneResponse hasPhoneResponse = Json.getInstance().fromJson(response, HasPhoneResponse.class);
 
         return hasPhoneResponse.hasPhone;
     }
@@ -260,31 +261,31 @@ public class AuthenticatorLinker {
     }
 
     private final class AddAuthenticatorResponse {
-        @SerializedName("response")
+        @JsonProperty("response")
         public SteamGuardAccount response;
     }
 
     private final class AddPhoneResponse {
-        @SerializedName("success")
+        @JsonProperty("success")
         public boolean success;
     }
 
     private final class FinalizeAuthenticatorResponse {
-        @SerializedName("status")
+        @JsonProperty("status")
         public int status;
 
-        @SerializedName("server_time")
+        @JsonProperty("server_time")
         public long serverTime;
 
-        @SerializedName("want_more")
+        @JsonProperty("want_more")
         public boolean wantMore;
 
-        @SerializedName("success")
+        @JsonProperty("success")
         public boolean success;
     }
 
     private final class HasPhoneResponse {
-        @SerializedName("has_phone")
+        @JsonProperty("has_phone")
         public boolean hasPhone;
     }
 }

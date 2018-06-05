@@ -1,14 +1,13 @@
 package com.vitaxa.steamauth;
 
-import com.google.gson.Gson;
-import com.google.gson.annotations.SerializedName;
-import com.google.gson.reflect.TypeToken;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.vitaxa.steamauth.helper.CommonHelper;
+import com.vitaxa.steamauth.helper.Json;
 import com.vitaxa.steamauth.http.HttpMethod;
 import com.vitaxa.steamauth.http.HttpParameters;
 import com.vitaxa.steamauth.model.SteamResponse;
 
-import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -46,9 +45,8 @@ public final class TimeAligner {
         params.put("steamid", "0");
         String response = SteamWeb.fetch(APIEndpoints.TWO_FACTOR_TIME_QUERY, new HttpParameters(params, HttpMethod.POST));
 
-        Type responseType = new TypeToken<SteamResponse<TimeQuery>>() {
-        }.getType();
-        SteamResponse steamResponse = new Gson().fromJson(response, responseType);
+        SteamResponse<TimeQuery> steamResponse = Json.getInstance().fromJson(response, new TypeReference<SteamResponse<TimeQuery>>() {
+        });
 
         TimeQuery query = (TimeQuery) steamResponse.getResponse();
 
@@ -57,7 +55,7 @@ public final class TimeAligner {
     }
 
     private final class TimeQuery {
-        @SerializedName("server_time")
+        @JsonProperty("server_time")
         public long serverTime;
     }
 
