@@ -2,6 +2,7 @@ package com.vitaxa.steamauth.helper;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
@@ -15,7 +16,9 @@ public class Json {
     private static final Json DEFAULT_SERIALIZER;
 
     static {
-        DEFAULT_SERIALIZER = new Json(new ObjectMapper());
+        final ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        DEFAULT_SERIALIZER = new Json(objectMapper);
     }
 
     private final ObjectMapper mapper;
