@@ -2,10 +2,7 @@ package com.vitaxa.steamauth.helper;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
+import com.fasterxml.jackson.databind.*;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -23,11 +20,13 @@ public class Json {
 
     private final ObjectMapper mapper;
     private final ObjectWriter writer;
+    private final ObjectReader reader;
     private final ObjectWriter prettyWriter;
 
     private Json(ObjectMapper mapper) {
         this.mapper = mapper;
         this.writer = mapper.writer();
+        this.reader = mapper.reader();
         this.prettyWriter = mapper.writerWithDefaultPrettyPrinter();
     }
 
@@ -37,6 +36,10 @@ public class Json {
 
     public ObjectWriter writer() {
         return writer;
+    }
+
+    public ObjectReader reader() {
+        return reader;
     }
 
     public ObjectWriter prettyWriter() {
