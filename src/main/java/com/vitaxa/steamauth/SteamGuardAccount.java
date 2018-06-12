@@ -8,12 +8,11 @@ import com.vitaxa.steamauth.helper.IOHelper;
 import com.vitaxa.steamauth.helper.Json;
 import com.vitaxa.steamauth.http.HttpMethod;
 import com.vitaxa.steamauth.http.HttpParameters;
-import com.vitaxa.steamauth.model.Confirmation;
-import com.vitaxa.steamauth.model.SessionData;
-import com.vitaxa.steamauth.model.SteamResponse;
+import com.vitaxa.steamauth.model.*;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.math.BigInteger;
 import java.net.URLEncoder;
 import java.security.InvalidKeyException;
 import java.util.*;
@@ -104,13 +103,13 @@ public final class SteamGuardAccount {
 
         while (confirmation.find()) {
 
-            final long confId = Long.parseLong(confirmation.group(1));
+            final long confId = new BigInteger(confirmation.group(1)).longValue();
 
-            final long confKey = Long.parseLong(confirmation.group(2));
+            final long confKey = new BigInteger(confirmation.group(2)).longValue();
 
             final int confType = Integer.parseInt(confirmation.group(3));
 
-            final long confCreator = Long.parseLong(confirmation.group(4));
+            final long confCreator = new BigInteger(confirmation.group(4)).longValue();
 
             ret.add(new Confirmation(confId, confKey, confType, confCreator));
         }
@@ -352,32 +351,5 @@ public final class SteamGuardAccount {
 
     public String getAccountName() {
         return accountName;
-    }
-
-    private class RefreshSessionDataResponse {
-        @JsonProperty("token")
-        public String token;
-
-        @JsonProperty("token_secure")
-        public String tokenSecure;
-    }
-
-    private class RemoveAuthenticatorResponse {
-        @JsonProperty("success")
-        private boolean success;
-
-        public boolean isSuccess() {
-            return success;
-        }
-    }
-
-    private class SendConfirmationResponse {
-        public boolean success;
-    }
-
-    private class ConfirmationDetailsResponse {
-        public boolean success;
-
-        public String html;
     }
 }
