@@ -72,41 +72,4 @@ public final class LoginResponse {
     public OAuth getoAuthData() {
         return oAuthDataString != null ? Json.getInstance().fromJson(oAuthDataString, OAuth.class) : null;
     }
-
-    public final class OAuth {
-        @JsonProperty("steamid")
-        private long steamID;
-
-        @JsonProperty("oauth_token")
-        private String oAuthToken;
-
-        @JsonProperty("wgtoken")
-        private String steamLogin;
-
-        @JsonProperty("wgtoken_secure")
-        private String steamLoginSecure;
-
-        @JsonProperty("webcookie")
-        private String webcookie;
-
-        public long getSteamID() {
-            return steamID;
-        }
-
-        public String getoAuthToken() {
-            return oAuthToken;
-        }
-
-        public String getSteamLogin() {
-            return steamLogin;
-        }
-
-        public String getSteamLoginSecure() {
-            return steamLoginSecure;
-        }
-
-        public String getWebcookie() {
-            return webcookie;
-        }
-    }
 }

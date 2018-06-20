@@ -1,14 +1,11 @@
 package com.vitaxa.steamauth;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.vitaxa.steamauth.helper.CommonHelper;
 import com.vitaxa.steamauth.helper.IOHelper;
 import com.vitaxa.steamauth.helper.Json;
 import com.vitaxa.steamauth.http.HttpMethod;
 import com.vitaxa.steamauth.http.HttpParameters;
-import com.vitaxa.steamauth.model.LoginResponse;
-import com.vitaxa.steamauth.model.LoginResult;
-import com.vitaxa.steamauth.model.SessionData;
+import com.vitaxa.steamauth.model.*;
 import org.apache.http.cookie.Cookie;
 
 import javax.crypto.Cipher;
@@ -23,20 +20,20 @@ import java.util.List;
 import java.util.Map;
 
 public final class UserLogin {
-    public final String username;
-    public final String password;
+    private final String username;
+    private final String password;
     private final Map<String, String> cookies;
-    public long steamID;
-    public boolean requiresCaptcha;
-    public String captchaGID = null;
-    public String captchaText = null;
-    public boolean requiresEmail;
-    public String emailDomain = null;
-    public String emailCode = null;
-    public boolean requires2FA;
-    public String twoFactorCode = null;
-    public SessionData session = null;
-    public boolean loggedIn = false;
+    private long steamID;
+    private boolean requiresCaptcha;
+    private String captchaGID = null;
+    private String captchaText = null;
+    private boolean requiresEmail;
+    private String emailDomain = null;
+    private String emailCode = null;
+    private boolean requires2FA;
+    private String twoFactorCode = null;
+    private SessionData session = null;
+    private boolean loggedIn = false;
 
     public UserLogin(String username, String password) {
         this.username = username;
@@ -71,7 +68,7 @@ public final class UserLogin {
 
         RSAResponse rsaResponse = Json.getInstance().fromJson(response, RSAResponse.class);
 
-        if (!rsaResponse.success)
+        if (!rsaResponse.isSuccess())
             return LoginResult.BAD_RSA;
 
         SecureRandom secureRandom = new SecureRandom();
@@ -80,8 +77,8 @@ public final class UserLogin {
         String encryptedPassword;
 
         try {
-            RSAPublicKeySpec publicKeySpec = new RSAPublicKeySpec(new BigInteger(rsaResponse.modulus, 16),
-                    new BigInteger(rsaResponse.exponent, 16));
+            RSAPublicKeySpec publicKeySpec = new RSAPublicKeySpec(new BigInteger(rsaResponse.getModulus(), 16),
+                    new BigInteger(rsaResponse.getExponent(), 16));
             KeyFactory keyFactory = KeyFactory.getInstance("RSA");
             RSAPublicKey RSAkey = (RSAPublicKey) keyFactory.generatePublic(publicKeySpec);
 
@@ -106,7 +103,7 @@ public final class UserLogin {
         postData.put("emailsteamid", (requires2FA || requiresEmail) ? String.valueOf(steamID) : "");
         postData.put("emailauth", requiresEmail ? emailCode : "");
 
-        postData.put("rsatimestamp", rsaResponse.timestamp);
+        postData.put("rsatimestamp", rsaResponse.getTimestamp());
         postData.put("remember_login", "false");
         postData.put("oauth_client_id", "DE45CD61");
         postData.put("oauth_scope", "read_profile write_profile read_client write_client");
@@ -142,7 +139,7 @@ public final class UserLogin {
             return LoginResult.TOO_MANY_FAILED_LOGINS;
         }
 
-        LoginResponse.OAuth oAuthData = loginResponse.getoAuthData();
+        OAuth oAuthData = loginResponse.getoAuthData();
         if (oAuthData == null || oAuthData.getoAuthToken() == null || oAuthData.getoAuthToken().length() == 0) {
             return LoginResult.GENERAL_FAILURE;
         }
@@ -171,20 +168,99 @@ public final class UserLogin {
         }
     }
 
-    private final class RSAResponse {
-        @JsonProperty("success")
-        public boolean success;
+    public String getUsername() {
+        return username;
+    }
 
-        @JsonProperty("publickey_exp")
-        public String exponent;
+    public String getPassword() {
+        return password;
+    }
 
-        @JsonProperty("publickey_mod")
-        public String modulus;
+    public long getSteamID() {
+        return steamID;
+    }
 
-        @JsonProperty("timestamp")
-        public String timestamp;
+    public void setSteamID(long steamID) {
+        this.steamID = steamID;
+    }
 
-        @JsonProperty("steamid")
-        public long steamID;
+    public boolean isRequiresCaptcha() {
+        return requiresCaptcha;
+    }
+
+    public void setRequiresCaptcha(boolean requiresCaptcha) {
+        this.requiresCaptcha = requiresCaptcha;
+    }
+
+    public String getCaptchaGID() {
+        return captchaGID;
+    }
+
+    public void setCaptchaGID(String captchaGID) {
+        this.captchaGID = captchaGID;
+    }
+
+    public String getCaptchaText() {
+        return captchaText;
+    }
+
+    public void setCaptchaText(String captchaText) {
+        this.captchaText = captchaText;
+    }
+
+    public boolean isRequiresEmail() {
+        return requiresEmail;
+    }
+
+    public void setRequiresEmail(boolean requiresEmail) {
+        this.requiresEmail = requiresEmail;
+    }
+
+    public boolean isRequires2FA() {
+        return requires2FA;
+    }
+
+    public void setRequires2FA(boolean requires2FA) {
+        this.requires2FA = requires2FA;
+    }
+
+    public String getTwoFactorCode() {
+        return twoFactorCode;
+    }
+
+    public void setTwoFactorCode(String twoFactorCode) {
+        this.twoFactorCode = twoFactorCode;
+    }
+
+    public boolean isLoggedIn() {
+        return loggedIn;
+    }
+
+    public void setLoggedIn(boolean loggedIn) {
+        this.loggedIn = loggedIn;
+    }
+
+    public String getEmailDomain() {
+        return emailDomain;
+    }
+
+    public void setEmailDomain(String emailDomain) {
+        this.emailDomain = emailDomain;
+    }
+
+    public String getEmailCode() {
+        return emailCode;
+    }
+
+    public void setEmailCode(String emailCode) {
+        this.emailCode = emailCode;
+    }
+
+    public SessionData getSession() {
+        return session;
+    }
+
+    public void setSession(SessionData session) {
+        this.session = session;
     }
 }
