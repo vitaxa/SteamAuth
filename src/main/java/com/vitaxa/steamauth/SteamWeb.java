@@ -45,6 +45,9 @@ public final class SteamWeb {
         httpContext.setAttribute(HttpClientContext.COOKIE_STORE, cookieStore);
     }
 
+    private SteamWeb() {
+    }
+
     public static void addCookies(SessionData sessionData) {
         sessionData.addCookies(cookieStore);
     }
