@@ -170,16 +170,16 @@ public final class IOHelper {
     }
 
     public static String read(BufferedReader reader) throws IOException {
-        String response = "";
+        StringBuilder response = new StringBuilder();
         String line;
         while ((line = reader.readLine()) != null) {
             if (response.length() > 0) {
-                response += "\n";
+                response.append("\n");
             }
-            response += line;
+            response.append(line);
         }
 
-        return response;
+        return response.toString();
     }
 
     public static int transfer(InputStream input, OutputStream output) throws IOException {
