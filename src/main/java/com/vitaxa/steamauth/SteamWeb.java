@@ -10,9 +10,6 @@ import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.CookieStore;
 import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpHead;
-import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.cookie.Cookie;
@@ -117,20 +114,9 @@ public final class SteamWeb {
     }
 
     public static HttpResponse request(String url, HttpParameters params, String referer, Map<String, String> header) {
-        // Build request based on method
-        switch (params.getMethod()) {
-            case GET:
-                HttpGet httpGet = (HttpGet) params.buildRequest(url);
-                return openConnection(httpGet, HttpGet.class, referer, header);
-            case POST:
-                HttpPost httpPost = (HttpPost) params.buildRequest(url);
-                return openConnection(httpPost, HttpPost.class, referer, header);
-            case HEAD:
-                HttpHead httpHead = (HttpHead) params.buildRequest(url);
-                return openConnection(httpHead, HttpHead.class, referer, header);
-            default:
-                throw new AssertionError("Unsupported method type: " + params.getMethod().toString());
-        }
+        final HttpRequestBase requestBase = params.buildRequest(url);
+
+        return openConnection(requestBase, referer, header);
     }
 
     public static void setCookieStore(CookieStore customCookieStore) {
@@ -141,15 +127,13 @@ public final class SteamWeb {
         return cookieStore.getCookies();
     }
 
-    private static <T extends HttpRequestBase> HttpResponse openConnection(HttpRequestBase httpRequest, Class<T> requestType,
-                                                                           String referer, Map<String, String> header) {
-        T request = requestType.cast(httpRequest);
+    private static HttpResponse openConnection(HttpRequestBase httpRequest, String referer, Map<String, String> header) {
         try {
             // Add header to request
-            addHeader(request, referer, header);
+            addHeader(httpRequest, referer, header);
 
             // Execute request
-            HttpResponse httpResponse = httpClient.execute(request, httpContext);
+            HttpResponse httpResponse = httpClient.execute(httpRequest, httpContext);
 
             try {
                 handleFailedWebRequestResponse(httpResponse, httpRequest.getURI().toURL().toString());
