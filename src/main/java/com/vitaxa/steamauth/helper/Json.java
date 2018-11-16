@@ -164,7 +164,7 @@ public class Json {
         }
     }
 
-    public static class JsonException extends RuntimeException {
+    private static class JsonException extends RuntimeException {
         private JsonException(Exception ex) {
             super(ex);
         }

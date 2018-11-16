@@ -1,6 +1,8 @@
 package com.vitaxa.steamauth.crypto;
 
 import com.vitaxa.steamauth.helper.IOHelper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
@@ -8,6 +10,9 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 
 public final class HMACSHA1 {
+
+    private static final Logger LOG = LoggerFactory.getLogger(HMACSHA1.class);
+
     private static final String HMAC_SHA1_ALGORITHM = "HmacSHA1";
     private static Mac MAC;
 
@@ -15,7 +20,7 @@ public final class HMACSHA1 {
         try {
             MAC = Mac.getInstance(HMAC_SHA1_ALGORITHM);
         } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
+            LOG.error("Exception while initializing crypto algorithm", e);
         }
     }
 

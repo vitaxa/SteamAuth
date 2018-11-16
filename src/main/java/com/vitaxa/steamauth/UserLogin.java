@@ -1,12 +1,13 @@
 package com.vitaxa.steamauth;
 
-import com.vitaxa.steamauth.helper.CommonHelper;
 import com.vitaxa.steamauth.helper.IOHelper;
 import com.vitaxa.steamauth.helper.Json;
 import com.vitaxa.steamauth.http.HttpMethod;
 import com.vitaxa.steamauth.http.HttpParameters;
 import com.vitaxa.steamauth.model.*;
 import org.apache.http.cookie.Cookie;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.crypto.Cipher;
 import java.math.BigInteger;
@@ -20,6 +21,9 @@ import java.util.List;
 import java.util.Map;
 
 public final class UserLogin {
+
+    private final static Logger LOG = LoggerFactory.getLogger(UserLogin.class);
+
     private final String username;
     private final String password;
     private final Map<String, String> cookies;
@@ -59,6 +63,7 @@ public final class UserLogin {
                     new HttpParameters(HttpMethod.GET), headers);
         }
 
+        postData.put("donotcache", String.valueOf(TimeAligner.getSteamTime() * 1000));
         postData.put("username", username);
         response = SteamWeb.mobileLoginRequest(APIEndpoints.COMMUNITY_BASE + "/login/getrsakey",
                 new HttpParameters(postData, HttpMethod.POST));
@@ -70,6 +75,12 @@ public final class UserLogin {
 
         if (!rsaResponse.isSuccess())
             return LoginResult.BAD_RSA;
+
+        try {
+            Thread.sleep(350); //Sleep for a bit to give Steam a chance to catch up??
+        } catch (InterruptedException e) {
+            LOG.error("User login was interrupted", e);
+        }
 
         SecureRandom secureRandom = new SecureRandom();
         byte[] encryptedPasswordBytes;
@@ -87,32 +98,34 @@ public final class UserLogin {
 
             encryptedPassword = Base64.getEncoder().encodeToString(cipher.doFinal(passwordBytes));
         } catch (Exception e) {
-            e.printStackTrace();
+            LOG.error("Could't encrypt password", e);
             return LoginResult.BAD_RSA;
         }
 
         postData.clear();
-        postData.put("username", username);
-        postData.put("password", encryptedPassword);
 
+        postData.put("donotcache", String.valueOf(TimeAligner.getSteamTime() * 1000));
+
+        postData.put("password", encryptedPassword);
+        postData.put("username", username);
         postData.put("twofactorcode", twoFactorCode != null ? twoFactorCode : "");
 
+        postData.put("emailauth", requiresEmail ? emailCode : "");
+        postData.put("loginfriendlyname", "");
         postData.put("captchagid", requiresCaptcha ? captchaGID : "-1");
         postData.put("captcha_text", requiresCaptcha ? captchaText : "");
-
         postData.put("emailsteamid", (requires2FA || requiresEmail) ? String.valueOf(steamID) : "");
-        postData.put("emailauth", requiresEmail ? emailCode : "");
 
         postData.put("rsatimestamp", rsaResponse.getTimestamp());
-        postData.put("remember_login", "false");
+        postData.put("remember_login", "true");
         postData.put("oauth_client_id", "DE45CD61");
         postData.put("oauth_scope", "read_profile write_profile read_client write_client");
-        postData.put("loginfriendlyname", "#login_emailauth_friendlyname_mobile");
-        postData.put("donotcache", String.valueOf(CommonHelper.getUnixTimeStamp()));
 
         response = SteamWeb.mobileLoginRequest(APIEndpoints.COMMUNITY_BASE + "/login/dologin", new HttpParameters(postData, HttpMethod.POST));
 
         LoginResponse loginResponse = Json.getInstance().fromJson(response, LoginResponse.class);
+
+        if (loginResponse == null) return LoginResult.GENERAL_FAILURE;
 
         if (loginResponse.getMessage() != null && loginResponse.getMessage().contains("The account name or password that you have entered is incorrect.")) {
             return LoginResult.BAD_CREDENTIALS;

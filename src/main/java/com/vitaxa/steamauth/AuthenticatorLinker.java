@@ -11,6 +11,8 @@ import com.vitaxa.steamauth.model.SessionData;
 import com.vitaxa.steamauth.model.SteamResponse;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.http.client.CookieStore;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.security.MessageDigest;
@@ -20,6 +22,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class AuthenticatorLinker {
+
+    private static final Logger LOG = LoggerFactory.getLogger(AuthenticatorLinker.class);
+
     /**
      * Set to register a new phone number when linking.
      * If a phone number is not set on the account, this must be set.
@@ -68,7 +73,7 @@ public class AuthenticatorLinker {
 
             return "android:" + splitOnRatios(random32, new int[]{8, 4, 4, 4, 12}, "-");
         } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
+            LOG.error("Failed to generate sha1 hash", e);
             return "";
         }
     }
@@ -115,7 +120,7 @@ public class AuthenticatorLinker {
         try {
             addAuthenticatorResponse = Json.getInstance().mapper().readValue(response, AddAuthenticatorResponse.class);
         } catch (IOException e) {
-            e.printStackTrace();
+            LOG.error("Couldn't read authenticator response", e);
         }
 
         if (addAuthenticatorResponse == null || addAuthenticatorResponse.response == null) {

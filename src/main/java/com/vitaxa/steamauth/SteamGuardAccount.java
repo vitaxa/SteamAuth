@@ -9,6 +9,8 @@ import com.vitaxa.steamauth.helper.Json;
 import com.vitaxa.steamauth.http.HttpMethod;
 import com.vitaxa.steamauth.http.HttpParameters;
 import com.vitaxa.steamauth.model.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -20,6 +22,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public final class SteamGuardAccount {
+
+    private final Logger LOG = LoggerFactory.getLogger(SteamGuardAccount.class);
+
     private static byte[] steamGuardCodeTranslations = new byte[]{50, 51, 52, 53, 54, 55, 56, 57, 66, 67, 68, 70, 71, 72, 74, 75, 77, 78, 80, 81, 82, 84, 86, 87, 88, 89};
     //Set to true if the authenticator has actually been applied to the account.
     @JsonProperty("fully_enrolled")
@@ -78,7 +83,7 @@ public final class SteamGuardAccount {
 
             return !(removeResponse == null || !removeResponse.isSuccess());
         } catch (Exception e) {
-            e.printStackTrace();
+            LOG.error("Deactivate authenticator error", e);
             return false;
         }
     }
@@ -151,7 +156,7 @@ public final class SteamGuardAccount {
                 codePoint /= steamGuardCodeTranslations.length;
             }
         } catch (InvalidKeyException e) {
-            e.printStackTrace();
+            LOG.error("Failed to generate hmac", e);
             return null;
         }
         return IOHelper.decode(codeArray);
@@ -227,7 +232,7 @@ public final class SteamGuardAccount {
             session.setSteamLogin(token);
             session.setSteamLoginSecure(tokenSecure);
         } catch (IOException e) {
-            e.printStackTrace();
+            LOG.error("Couldn't refresh a session", e);
         }
 
         return true;
@@ -271,7 +276,8 @@ public final class SteamGuardAccount {
         try {
             confResponse = Json.getInstance().mapper().readValue(response, SendConfirmationResponse.class);
         } catch (IOException e) {
-            e.printStackTrace();
+            LOG.error("Could't read confirmation response", e);
+            return false;
         }
 
         return confResponse.success;
