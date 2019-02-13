@@ -127,8 +127,13 @@ public final class UserLogin {
 
         if (loginResponse == null) return LoginResult.GENERAL_FAILURE;
 
-        if (loginResponse.getMessage() != null && loginResponse.getMessage().contains("The account name or password that you have entered is incorrect.")) {
-            return LoginResult.BAD_CREDENTIALS;
+        if (loginResponse.getMessage() != null) {
+            if (loginResponse.getMessage().contains("There have been too many login failures")) {
+                return LoginResult.TOO_MANY_FAILED_LOGINS;
+            }
+            if (loginResponse.getMessage().contains("Incorrect login")) {
+                return LoginResult.BAD_CREDENTIALS;
+            }
         }
 
         if (loginResponse.isCaptchaNeeded()) {
@@ -146,10 +151,6 @@ public final class UserLogin {
         if (loginResponse.isTwoFactorNeeded() && !loginResponse.isSuccess()) {
             requires2FA = true;
             return LoginResult.NEED_2FA;
-        }
-
-        if (loginResponse.getMessage() != null && loginResponse.getMessage().contains("too many login failures")) {
-            return LoginResult.TOO_MANY_FAILED_LOGINS;
         }
 
         OAuth oAuthData = loginResponse.getoAuthData();
