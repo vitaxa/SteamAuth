@@ -265,17 +265,17 @@ public class AuthenticatorLinker {
         return session;
     }
 
-    private final class AddAuthenticatorResponse {
+    public static final class AddAuthenticatorResponse {
         @JsonProperty("response")
         public SteamGuardAccount response;
     }
 
-    private final class AddPhoneResponse {
+    public static final class AddPhoneResponse {
         @JsonProperty("success")
         public boolean success;
     }
 
-    private final class FinalizeAuthenticatorResponse {
+    public static final class FinalizeAuthenticatorResponse {
         @JsonProperty("status")
         public int status;
 
@@ -289,7 +289,7 @@ public class AuthenticatorLinker {
         public boolean success;
     }
 
-    private final class HasPhoneResponse {
+    public static final class HasPhoneResponse {
         @JsonProperty("has_phone")
         public boolean hasPhone;
     }
