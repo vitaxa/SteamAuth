@@ -29,7 +29,8 @@ import java.util.concurrent.*;
 public final class SteamWeb {
 
     private static final ThreadFactory THREAD_FACTORY = r -> CommonHelper.newThread("SteamWeb Thread", true, r);
-    private static final ExecutorService THREAD_POOL = Executors.newCachedThreadPool(THREAD_FACTORY);
+    private static final ExecutorService THREAD_POOL =
+            Executors.newFixedThreadPool(2 * Runtime.getRuntime().availableProcessors() + 1, THREAD_FACTORY);
 
     private static final HttpClient httpClient = HttpClientBuilder.create().build();
 

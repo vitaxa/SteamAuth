@@ -67,7 +67,7 @@ public final class SteamGuardAccount {
     }
 
     public boolean deactivateAuthenticator(int scheme) {
-        Map<String, String> postData = new HashMap<>();
+        final Map<String, String> postData = new HashMap<>();
         postData.put("steamid", String.valueOf(session.getSteamID()));
         postData.put("steamguard_scheme", String.valueOf(scheme));
         postData.put("revocation_code", revocationCode);
